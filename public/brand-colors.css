@@ -1,0 +1,36 @@
+/**
+ * Midnight Blog Brand Colors
+ * These CSS variables define the official brand colors used throughout the site.
+ * They are used for SEO meta tags and UI components.
+ */
+
+:root {
+  /* Primary Colors */
+  --midnight-primary: #1f2937;      /* Main brand color */
+  --midnight-secondary: #13151a;    /* Background color */
+  --midnight-accent: #3b82f6;       /* Blue accent color */
+  
+  /* Text Colors */
+  --midnight-text-primary: #ffffff;
+  --midnight-text-secondary: #d1d5db;
+  --midnight-text-muted: #9ca3af;
+  
+  /* UI Colors */
+  --midnight-ui-border: #374151;
+  --midnight-ui-hover: #4b5563;
+  --midnight-ui-active: #6b7280;
+  
+  /* Status Colors */
+  --midnight-success: #10b981;
+  --midnight-error: #ef4444;
+  --midnight-warning: #f59e0b;
+  --midnight-info: #3b82f6;
+}
+
+/**
+ * Usage guide for SEO meta tags:
+ * 
+ * <meta name="theme-color" content="#1f2937">
+ * <meta name="msapplication-TileColor" content="#1f2937">
+ * <link rel="mask-icon" href="/favicon.png" color="#1f2937">
+ */ 
