@@ -410,6 +410,39 @@ export const BlogProvider = ({ children }) => {
         });
     }, [persistenceEnabled]);
 
+    // Function to remove a comment from a blog post
+    const removeComment = useCallback((blogId, commentId) => {
+        setBlogs(prevBlogs => {
+            // Find the blog post and remove the comment
+            const updatedBlogs = prevBlogs.map(blog => {
+                if (blog.id.toString() !== blogId.toString()) {
+                    return blog;
+                }
+                
+                // Filter out the comment to be removed
+                const updatedComments = blog.comments.filter(
+                    comment => comment.id.toString() !== commentId.toString()
+                );
+                
+                return {
+                    ...blog,
+                    comments: updatedComments
+                };
+            });
+            
+            // Try to persist changes
+            if (persistenceEnabled) {
+                const result = saveBlogDataToLocalStorage(updatedBlogs);
+                if (!result.success) {
+                    setPersistenceEnabled(false);
+                }
+                setStorageInfo(result.storageInfo);
+            }
+            
+            return updatedBlogs;
+        });
+    }, [persistenceEnabled]);
+
     // Get function to clear all storage if needed
     const clearAllBlogs = useCallback(() => {
         try {
@@ -467,7 +500,9 @@ export const BlogProvider = ({ children }) => {
         storageInfo,
         updateStorageInfo,
         clearAllBlogs,
-        addComment
+        addComment,
+        removeComment,
+        setBlogs
     };
 
     // local storage to persist the data and use the useEffect hook to load the data from local storage

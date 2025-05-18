@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaReply, FaCommentDots, FaUserCircle } from 'react-icons/fa';
+import { FaReply, FaCommentDots, FaUserCircle, FaEllipsisV, FaTrash } from 'react-icons/fa';
 import { useBlog } from '../../context/BlogContext';
+import { useDeleteComment } from '../../context/DeleteCommentContext';
 
 const CommentSection = ({ postId, comments = [] }) => {
     const [newComment, setNewComment] = useState('');
@@ -12,6 +13,16 @@ const CommentSection = ({ postId, comments = [] }) => {
     
     // Get addComment function from context
     const { addComment } = useBlog();
+    
+    // Safely try to get DeleteCommentContext
+    let deleteContextValue = { deleteSuccess: false };
+    try {
+        deleteContextValue = useDeleteComment();
+    } catch (error) {
+        console.warn('DeleteCommentContext not available, delete functionality will be disabled');
+    }
+    
+    const { deleteSuccess } = deleteContextValue;
     
     // Get the latest 5 comments, sorted by most recent first
     const latestComments = [...comments]
@@ -119,6 +130,12 @@ const CommentSection = ({ postId, comments = [] }) => {
                         Your comment has been added successfully!
                     </div>
                 )}
+
+                {deleteSuccess && (
+                    <div className="p-3 mb-4 bg-green-900/50 border border-green-700 rounded text-green-300">
+                        Comment deleted successfully!
+                    </div>
+                )}
                 
                 <button
                     type="submit"
@@ -152,7 +169,7 @@ const CommentSection = ({ postId, comments = [] }) => {
             <AnimatePresence>
                 {latestComments.length > 0 ? (
                     latestComments.map((comment) => (
-                        <CommentThread key={comment.id} comment={comment} />
+                        <CommentThread key={comment.id} comment={comment} postId={postId} />
                     ))
                 ) : (
                     <motion.p
@@ -168,11 +185,28 @@ const CommentSection = ({ postId, comments = [] }) => {
     );
 };
 
-const CommentThread = ({ comment }) => {
+const CommentThread = ({ comment, postId }) => {
     const [showReplies, setShowReplies] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+    
+    // Safely try to get DeleteCommentContext
+    let deleteContextValue = { 
+        prepareDeleteComment: () => {}, 
+        deleteComment: () => {}, 
+        isDeletingComment: false 
+    };
+    
+    try {
+        deleteContextValue = useDeleteComment();
+    } catch (error) {
+        console.warn('DeleteCommentContext not available, delete functionality will be disabled');
+    }
+    
+    const { prepareDeleteComment, deleteComment, isDeletingComment } = deleteContextValue;
 
     // Ensure comment has all required properties
     const safeComment = {
+        id: comment?.id || Date.now(),
         author: {
             name: comment?.author?.name || 'Anonymous',
             avatar: comment?.author?.avatar
@@ -182,13 +216,43 @@ const CommentThread = ({ comment }) => {
         replies: comment?.replies || []
     };
 
+    const handleDelete = () => {
+        prepareDeleteComment(postId, safeComment.id);
+        deleteComment();
+        setShowMenu(false);
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-gray-800 p-4 rounded-lg mb-4 border border-gray-700 hover:border-gray-600 transition-colors"
+            className="bg-gray-800 p-4 rounded-lg mb-4 border border-gray-700 hover:border-gray-600 transition-colors relative"
         >
+            {/* Three-dot menu */}
+            <div className="absolute top-2 right-2">
+                <button 
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="p-1 hover:bg-gray-700 rounded-full transition-colors"
+                >
+                    <FaEllipsisV className="text-gray-400 hover:text-white" />
+                </button>
+                
+                {/* Dropdown menu */}
+                {showMenu && (
+                    <div className="absolute right-0 mt-1 w-36 bg-gray-700 rounded-md shadow-lg z-10 overflow-hidden">
+                        <button
+                            onClick={handleDelete}
+                            disabled={isDeletingComment}
+                            className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-600 flex items-center transition-colors"
+                        >
+                            <FaTrash className="mr-2" />
+                            {isDeletingComment ? 'Deleting...' : 'Delete'}
+                        </button>
+                    </div>
+                )}
+            </div>
+
             <div className="flex items-center mb-2">
                 {safeComment.author.avatar ? (
                     <img

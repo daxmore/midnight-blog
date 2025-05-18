@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FiMoreVertical } from 'react-icons/fi';
+import { FaEllipsisV, FaTrash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { BlogContext } from '../../context/BlogContext';
 
@@ -45,15 +45,15 @@ const BlogCard = ({ title, excerpt, imageUrl, date, readTime, category, index, o
                 <div className="absolute top-4 right-4">
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
-                        className="text-white hover:text-gray-300 focus:outline-none"
+                        className="p-1 hover:bg-gray-700 rounded-full transition-colors"
                         aria-label="Options menu"
                     >
-                        <FiMoreVertical size={20} />
+                        <FaEllipsisV className="text-gray-400 hover:text-white" />
                     </button>
                     {menuOpen && (
-                        <div className="absolute right-0 mt-2 w-32 bg-gray-900 text-white rounded-md shadow-lg z-10">
+                        <div className="absolute right-0 mt-1 w-36 bg-gray-700 rounded-md shadow-lg z-10 overflow-hidden">
                             <button
-                                className="block rounded-md w-full px-4 py-2 text-left hover:bg-gray-700"
+                                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-600 flex items-center transition-colors"
                                 onClick={() => {
                                     setMenuOpen(false);
                                     removeBlog(id);
@@ -61,6 +61,7 @@ const BlogCard = ({ title, excerpt, imageUrl, date, readTime, category, index, o
                                 }}
                                 aria-label="Delete blog post"
                             >
+                                <FaTrash className="mr-2" />
                                 Delete
                             </button>
                         </div>

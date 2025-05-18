@@ -11,6 +11,7 @@ import SigninForm from './components/auth/SigninForm';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import { BlogProvider } from './context/BlogContext';
+import { DeleteCommentProvider } from './context/DeleteCommentContext';
 import BlogDetailsPage from './pages/BlogDetailsPage';
 
 /**
@@ -20,24 +21,26 @@ const BrowserRouterApp = () => {
     return (
         <BrowserRouter>
             <BlogProvider>
-                <div className="min-h-screen bg-gradient-to-t from-[#000000] to-[#1f2937] text-gray-300">
-                    <Navbar />
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/blogs" element={<Blogs />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/contact" element={<Contact />} />
-                        <Route path="/start-writing" element={<StartWriting />} />
-                        <Route
-                            path="*"
-                            element={<ErrorPage errorCode="404" errorMessage="Page Not Found" />}
-                        />
-                        <Route path="/signup" element={<SigninForm />} />
-                        <Route path="/signin" element={<SignupForm />} />
-                        <Route path="/blogs/:slug" element={<BlogDetailsPage />} />
-                    </Routes>
-                    <Footer />
-                </div>
+                <DeleteCommentProvider>
+                    <div className="min-h-screen bg-gradient-to-t from-[#000000] to-[#1f2937] text-gray-300">
+                        <Navbar />
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/blogs" element={<Blogs />} />
+                            <Route path="/about" element={<About />} />
+                            <Route path="/contact" element={<Contact />} />
+                            <Route path="/start-writing" element={<StartWriting />} />
+                            <Route
+                                path="*"
+                                element={<ErrorPage errorCode="404" errorMessage="Page Not Found" />}
+                            />
+                            <Route path="/signup" element={<SigninForm />} />
+                            <Route path="/signin" element={<SignupForm />} />
+                            <Route path="/blogs/:slug" element={<BlogDetailsPage />} />
+                        </Routes>
+                        <Footer />
+                    </div>
+                </DeleteCommentProvider>
             </BlogProvider>
         </BrowserRouter>
     );
