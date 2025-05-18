@@ -10,10 +10,18 @@ const CommentSection = ({ postId, comments = [] }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [commentError, setCommentError] = useState('');
     const [commentSuccess, setCommentSuccess] = useState(false);
-    
+
+    // Safely try to get DeleteCommentContext
+    const deleteComment = useContext(DeleteCommentContext);
+
+    if (!deleteComment) {
+        console.warn("DeleteCommentContext is not available.");
+        return <p>Error: Unable to delete comments at this time.</p>;
+    }
+
     // Get addComment function from context
     const { addComment } = useBlog();
-    
+
     // Safely try to get DeleteCommentContext
     let deleteContextValue = { deleteSuccess: false };
     try {
@@ -21,9 +29,9 @@ const CommentSection = ({ postId, comments = [] }) => {
     } catch (error) {
         console.warn('DeleteCommentContext not available, delete functionality will be disabled');
     }
-    
+
     const { deleteSuccess } = deleteContextValue;
-    
+
     // Get the latest 5 comments, sorted by most recent first
     const latestComments = [...comments]
         .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -34,7 +42,7 @@ const CommentSection = ({ postId, comments = [] }) => {
         setIsSubmitting(true);
         setCommentError('');
         setCommentSuccess(false);
-        
+
         try {
             // Validate inputs
             if (!commentAuthor.trim()) {
@@ -42,23 +50,23 @@ const CommentSection = ({ postId, comments = [] }) => {
                 setIsSubmitting(false);
                 return;
             }
-            
+
             if (!newComment.trim()) {
                 setCommentError('Please enter a comment');
                 setIsSubmitting(false);
                 return;
             }
-            
+
             // Add the comment using context function
             addComment(postId, {
                 author: commentAuthor.trim(),
                 content: newComment.trim()
             });
-            
+
             // Reset form
             setNewComment('');
             setCommentSuccess(true);
-            
+
             // Hide success message after 3 seconds
             setTimeout(() => {
                 setCommentSuccess(false);
@@ -103,7 +111,7 @@ const CommentSection = ({ postId, comments = [] }) => {
                         required
                     />
                 </div>
-                
+
                 <div className="mb-4">
                     <label htmlFor="commentContent" className="block text-sm text-gray-400 mb-1 font-medium">
                         Your Comment
@@ -118,13 +126,13 @@ const CommentSection = ({ postId, comments = [] }) => {
                         required
                     />
                 </div>
-                
+
                 {commentError && (
                     <div className="p-3 mb-4 bg-red-900/50 border border-red-700 rounded text-red-300">
                         {commentError}
                     </div>
                 )}
-                
+
                 {commentSuccess && (
                     <div className="p-3 mb-4 bg-green-900/50 border border-green-700 rounded text-green-300">
                         Your comment has been added successfully!
@@ -136,14 +144,13 @@ const CommentSection = ({ postId, comments = [] }) => {
                         Comment deleted successfully!
                     </div>
                 )}
-                
+
                 <button
                     type="submit"
-                    className={`mt-2 px-6 py-3 rounded font-medium flex items-center transition-all duration-300 ${
-                        isSubmitting 
-                            ? 'bg-gray-700 text-gray-400 cursor-not-allowed' 
+                    className={`mt-2 px-6 py-3 rounded font-medium flex items-center transition-all duration-300 ${isSubmitting
+                            ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
                             : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-blue-900/50'
-                    }`}
+                        }`}
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? (
@@ -159,7 +166,7 @@ const CommentSection = ({ postId, comments = [] }) => {
                     )}
                 </button>
             </form>
-            
+
             {comments.length > 5 && (
                 <div className="mb-6 text-sm text-gray-400 italic">
                     Showing the 5 most recent comments out of {comments.length} total
@@ -188,20 +195,20 @@ const CommentSection = ({ postId, comments = [] }) => {
 const CommentThread = ({ comment, postId }) => {
     const [showReplies, setShowReplies] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
-    
+
     // Safely try to get DeleteCommentContext
-    let deleteContextValue = { 
-        prepareDeleteComment: () => {}, 
-        deleteComment: () => {}, 
-        isDeletingComment: false 
+    let deleteContextValue = {
+        prepareDeleteComment: () => { },
+        deleteComment: () => { },
+        isDeletingComment: false
     };
-    
+
     try {
         deleteContextValue = useDeleteComment();
     } catch (error) {
         console.warn('DeleteCommentContext not available, delete functionality will be disabled');
     }
-    
+
     const { prepareDeleteComment, deleteComment, isDeletingComment } = deleteContextValue;
 
     // Ensure comment has all required properties
@@ -231,13 +238,13 @@ const CommentThread = ({ comment, postId }) => {
         >
             {/* Three-dot menu */}
             <div className="absolute top-2 right-2">
-                <button 
+                <button
                     onClick={() => setShowMenu(!showMenu)}
                     className="p-1 hover:bg-gray-700 rounded-full transition-colors"
                 >
                     <FaEllipsisV className="text-gray-400 hover:text-white" />
                 </button>
-                
+
                 {/* Dropdown menu */}
                 {showMenu && (
                     <div className="absolute right-0 mt-1 w-36 bg-gray-700 rounded-md shadow-lg z-10 overflow-hidden">

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useParams, useNavigate } from "react-router-dom";
 
 import BlogHeader from '../components/blog/BlogHeader';
 import BlogContent from '../components/blog/BlogContent';
@@ -7,7 +8,6 @@ import ShareButtons from '../components/blog/ShareButtons';
 import AuthorBioCard from '../components/blog/AuthorBioCard';
 import CommentSection from '../components/blog/CommentSection';
 import NewsletterCTA from '../components/common/NewsletterCTA';
-import { useParams, useNavigate } from 'react-router-dom';
 import { useBlog } from '../context/BlogContext';
 import ErrorPage from './ErrorPage';
 
@@ -137,48 +137,36 @@ const DocumentHead = ({ title, description, image, author, date, category, slug 
     return null; // This component doesn't render anything
 };
 
-const BlogDetailsPage = () => {
-    const params = useParams();
-    const slug = params.slug;
+const BlogDetailsPage = ({ blogs }) => {
+    const { slug } = useParams();
     const navigate = useNavigate();
-    const { getBlogById, loading, blogs } = useBlog();
 
-    console.log('BlogDetailsPage - params:', params);
-    console.log('BlogDetailsPage - slug:', slug);
-    console.log('BlogDetailsPage - All blogs:', blogs);
-    
-    if (loading) {
-        return <div className="flex justify-center items-center h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-500"></div>
-        </div>;
-    }
+    const blog = blogs.find((b) => b.slug === slug);
 
-    if (!slug) {
-        console.error('No slug parameter found in URL');
-        return <ErrorPage errorCode="400" errorMessage="Missing Blog Identifier" />;
-    }
-
-    const fetchedBlogPost = getBlogById(slug);
-    console.log('BlogDetailsPage - Fetched blog:', fetchedBlogPost);
-
-    if (!fetchedBlogPost) {
-        console.error(`Blog post with ID or slug "${slug}" not found.`);
-        return <ErrorPage errorCode="404" errorMessage="Blog Post Not Found" />;
+    if (!slug || !blog) {
+        console.error("Blog post not found or slug is missing.");
+        return (
+            <div>
+                <h1>Blog Not Found</h1>
+                <p>The blog post you're looking for doesn't exist.</p>
+                <button onClick={() => navigate("/")}>Go Back to Home</button>
+            </div>
+        );
     }
 
     // Ensure the blog post has all required fields
     const safeBlog = {
-        id: fetchedBlogPost.id,
-        title: fetchedBlogPost.title || 'Untitled Blog Post',
-        content: fetchedBlogPost.content || '<p>No content available</p>',
-        image: fetchedBlogPost.image || null,
-        date: fetchedBlogPost.date || new Date().toLocaleDateString(),
-        slug: fetchedBlogPost.slug || slug,
-        author: fetchedBlogPost.author || 'Anonymous',
-        readTime: fetchedBlogPost.readTime || '5 min read',
-        comments: fetchedBlogPost.comments || [],
-        excerpt: fetchedBlogPost.excerpt || 'Blog post details',
-        category: fetchedBlogPost.category || 'Blog'
+        id: blog.id,
+        title: blog.title || 'Untitled Blog Post',
+        content: blog.content || '<p>No content available</p>',
+        image: blog.image || null,
+        date: blog.date || new Date().toLocaleDateString(),
+        slug: blog.slug || slug,
+        author: blog.author || 'Anonymous',
+        readTime: blog.readTime || '5 min read',
+        comments: blog.comments || [],
+        excerpt: blog.excerpt || 'Blog post details',
+        category: blog.category || 'Blog'
     };
 
     try {
