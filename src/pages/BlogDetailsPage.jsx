@@ -220,13 +220,13 @@ const BlogDetailsPage = () => {
                             <AuthorBioCard
                                 author={safeBlog.author}
                             />
+                            
+                            <CommentSection
+                                postId={safeBlog.id}
+                                comments={safeBlog.comments}
+                            />
                         </div>
                     </div>
-
-                    <CommentSection
-                        postId={safeBlog.id}
-                        comments={safeBlog.comments}
-                    />
 
                     <NewsletterCTA />
                 </div>
