@@ -137,9 +137,10 @@ const DocumentHead = ({ title, description, image, author, date, category, slug 
     return null; // This component doesn't render anything
 };
 
-const BlogDetailsPage = ({ blogs }) => {
+const BlogDetailsPage = () => {
     const { slug } = useParams();
     const navigate = useNavigate();
+    const { blogs } = useBlog();
 
     const blog = blogs.find((b) => b.slug === slug);
 

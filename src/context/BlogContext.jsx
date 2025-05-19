@@ -126,10 +126,17 @@ const prepareBlogsForStorage = (blogs) => {
     let totalSize = 0;
     let truncationWarnings = [];
     
-    for (const blog of blogs) {
+    // Sort blogs by date (newest first) to prioritize recent content
+    const sortedBlogs = [...blogs].sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateB - dateA;
+    });
+    
+    for (const blog of sortedBlogs) {
         // Process content fields with potential truncation
-        const processedContent = limitContentSize(blog.content);
-        const processedExcerpt = limitContentSize(blog.excerpt, 200);
+        const processedContent = limitContentSize(blog.content, 5000); // Reduced from 30000
+        const processedExcerpt = limitContentSize(blog.excerpt, 100); // Reduced from 200
         
         // Track any truncation
         if (processedContent.truncated) {
@@ -152,6 +159,20 @@ const prepareBlogsForStorage = (blogs) => {
             });
         }
         
+        // Process comments - keep only the 10 most recent comments
+        const processedComments = blog.comments 
+            ? blog.comments
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 10)
+                .map(comment => ({
+                    id: comment.id,
+                    author: comment.author,
+                    content: limitContentSize(comment.content, 500).content, // Limit comment content
+                    date: comment.date,
+                    replies: comment.replies?.slice(0, 3) || [] // Keep only 3 most recent replies
+                }))
+            : [];
+        
         const processedBlog = {
             id: blog.id,
             title: blog.title,
@@ -163,19 +184,25 @@ const prepareBlogsForStorage = (blogs) => {
             author: blog.author,
             readTime: blog.readTime,
             image: blog.image,
-            // Omit large data like comments or limit their size
-            comments: blog.comments ? blog.comments.slice(0, 5) : []
+            comments: processedComments
         };
         
         const blogSize = estimateBlogSize(processedBlog);
         totalSize += blogSize;
+        
+        // If we're approaching the storage limit, stop processing more blogs
+        if (totalSize > MAX_STORAGE_SIZE * 0.8) {
+            console.warn(`Storage limit reached after processing ${processed.length} blogs`);
+            break;
+        }
         
         processed.push({
             ...processedBlog,
             _meta: {
                 size: blogSize,
                 contentTruncated: processedContent.truncated,
-                excerptTruncated: processedExcerpt.truncated
+                excerptTruncated: processedExcerpt.truncated,
+                commentsTruncated: blog.comments?.length > 10
             }
         });
     }
@@ -184,16 +211,21 @@ const prepareBlogsForStorage = (blogs) => {
         blogs: processed,
         storageInfo: {
             ...storageStatus,
-            postsProcessed: blogs.length,
+            postsProcessed: processed.length,
             totalSizeBytes: totalSize,
-            truncationWarnings
+            truncationWarnings,
+            originalPostCount: blogs.length
         }
     };
 };
 
 // to save blog data in the local storage
 const saveBlogDataToLocalStorage = (posts) => {
+    console.log('Attempting to save blogs to localStorage:', { postCount: posts.length });
+    
     const storageStatus = checkStorageQuota();
+    console.log('Storage status:', storageStatus);
+    
     if (!storageStatus.available) {
         console.warn('Storage not available:', storageStatus.message);
         return {
@@ -203,8 +235,13 @@ const saveBlogDataToLocalStorage = (posts) => {
     }
 
     try {
-        // First try to save only the essential data with careful size tracking
+        // First try to save with data reduction
         const { blogs: simplifiedPosts, storageInfo } = prepareBlogsForStorage(posts);
+        console.log('Prepared posts for storage:', { 
+            originalCount: posts.length,
+            processedCount: simplifiedPosts.length,
+            storageInfo 
+        });
         
         // Log any truncation warnings
         if (storageInfo.truncationWarnings.length > 0) {
@@ -218,7 +255,13 @@ const saveBlogDataToLocalStorage = (posts) => {
         }
         
         // Store the data
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(simplifiedPosts));
+        const dataToStore = JSON.stringify(simplifiedPosts);
+        console.log('Attempting to store data of size:', dataToStore.length);
+        
+        // Clear existing data before saving new data
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.setItem(STORAGE_KEY, dataToStore);
+        console.log('Successfully saved to localStorage');
         
         return {
             success: true,
@@ -226,25 +269,38 @@ const saveBlogDataToLocalStorage = (posts) => {
         };
     } catch (error) {
         console.error('Error saving blog data to local storage:', error);
+        console.error('Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
 
+        // If the first attempt fails, try with more aggressive data reduction
         try {
-            // If error occurs, try to save only last 10 posts
-            if (posts.length > 10) {
-                const { blogs: reducedPosts, storageInfo } = prepareBlogsForStorage(posts.slice(-10));
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(reducedPosts));
-                console.warn('Saved only the 10 most recent blog posts due to storage limitations');
-                return {
-                    success: true,
-                    storageInfo: {
-                        ...storageInfo,
-                        truncated: true,
-                        truncationLevel: 'reduced-to-10'
-                    }
-                };
-            }
-
-            // If still fails with 10 posts, try clearing storage and saving just the latest post
-            if (posts.length > 0) {
+            console.log('Attempting fallback with more aggressive data reduction');
+            const { blogs: reducedPosts, storageInfo } = prepareBlogsForStorage(posts.slice(-5)); // Keep only last 5 posts
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(reducedPosts));
+            console.warn('Saved only the 5 most recent blog posts due to storage limitations');
+            return {
+                success: true,
+                storageInfo: {
+                    ...storageInfo,
+                    truncated: true,
+                    truncationLevel: 'reduced-to-5'
+                }
+            };
+        } catch (fallbackError) {
+            console.error('Could not save any blog data to storage:', fallbackError);
+            console.error('Fallback error details:', {
+                name: fallbackError.name,
+                message: fallbackError.message,
+                stack: fallbackError.stack
+            });
+            
+            // Last resort: clear storage and try to save just the latest post
+            try {
+                console.log('Attempting final fallback: saving only latest post');
                 localStorage.clear();
                 const { blogs: latestPost, storageInfo } = prepareBlogsForStorage([posts[posts.length - 1]]);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(latestPost));
@@ -257,25 +313,18 @@ const saveBlogDataToLocalStorage = (posts) => {
                         truncationLevel: 'latest-only'
                     }
                 };
-            }
-        } catch (fallbackError) {
-            console.error('Could not save any blog data to storage:', fallbackError);
-            // Last resort: clear storage
-            try {
-                localStorage.removeItem(STORAGE_KEY);
-            } catch (e) {
-                // If even removal fails, we can't do anything with localStorage
+            } catch (finalError) {
+                console.error('All storage attempts failed:', finalError);
+                return {
+                    success: false,
+                    error: finalError.message,
+                    storageInfo: {
+                        available: false,
+                        message: "All storage attempts failed"
+                    }
+                };
             }
         }
-        
-        return {
-            success: false,
-            error: error.message,
-            storageInfo: {
-                available: false,
-                message: "Storage quota exceeded and fallbacks failed"
-            }
-        };
     }
 };
 
@@ -386,9 +435,9 @@ export const BlogProvider = ({ children }) => {
                 };
                 
                 // Add to existing comments or create new array
-                // Keep only the latest 5 comments
+                // Store all comments instead of just the latest 5
                 const updatedComments = blog.comments 
-                    ? [newComment, ...blog.comments].slice(0, 5) 
+                    ? [newComment, ...blog.comments]
                     : [newComment];
                 
                 return {
@@ -520,17 +569,30 @@ export const BlogProvider = ({ children }) => {
     // to load the data from local storage
     useEffect(() => {
         const getBlogDataFromLocalStorage = () => {
+            console.log('Attempting to load blogs from localStorage');
             try {
                 const savedBlogData = localStorage.getItem(STORAGE_KEY);
+                console.log('Raw data from localStorage:', savedBlogData ? 'Data exists' : 'No data found');
+                
                 if (savedBlogData) {
                     const parsedData = JSON.parse(savedBlogData);
+                    console.log('Successfully parsed data:', { 
+                        blogCount: parsedData.length,
+                        hasComments: parsedData.some(blog => blog.comments?.length > 0)
+                    });
                     setBlogs(parsedData);
                 }
                 
                 // Check storage status on load
-                updateStorageInfo();
+                const storageStatus = updateStorageInfo();
+                console.log('Storage status after load:', storageStatus);
             } catch (error) {
                 console.error('Error loading blogs from localStorage:', error);
+                console.error('Error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
                 setPersistenceEnabled(false);
             } finally {
                 setLoading(false);

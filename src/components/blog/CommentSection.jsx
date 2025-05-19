@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaReply, FaCommentDots, FaUserCircle, FaEllipsisV, FaTrash } from 'react-icons/fa';
+import { FaReply, FaCommentDots, FaUserCircle, FaEllipsisV, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useBlog } from '../../context/BlogContext';
 import { useDeleteComment } from '../../context/DeleteCommentContext';
+
+const COMMENTS_PER_PAGE = 5;
 
 const CommentSection = ({ postId, comments = [] }) => {
     const [newComment, setNewComment] = useState('');
@@ -10,14 +12,7 @@ const CommentSection = ({ postId, comments = [] }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [commentError, setCommentError] = useState('');
     const [commentSuccess, setCommentSuccess] = useState(false);
-
-    // Safely try to get DeleteCommentContext
-    const deleteComment = useContext(DeleteCommentContext);
-
-    if (!deleteComment) {
-        console.warn("DeleteCommentContext is not available.");
-        return <p>Error: Unable to delete comments at this time.</p>;
-    }
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Get addComment function from context
     const { addComment } = useBlog();
@@ -32,10 +27,20 @@ const CommentSection = ({ postId, comments = [] }) => {
 
     const { deleteSuccess } = deleteContextValue;
 
-    // Get the latest 5 comments, sorted by most recent first
-    const latestComments = [...comments]
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 5);
+    // Sort comments by date (newest first) and paginate
+    const sortedComments = [...comments].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const totalPages = Math.ceil(sortedComments.length / COMMENTS_PER_PAGE);
+    const startIndex = (currentPage - 1) * COMMENTS_PER_PAGE;
+    const paginatedComments = sortedComments.slice(startIndex, startIndex + COMMENTS_PER_PAGE);
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+        // Scroll to top of comments section
+        const commentsSection = document.getElementById('comments-section');
+        if (commentsSection) {
+            commentsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
     const handleSubmitComment = (e) => {
         e.preventDefault();
@@ -63,8 +68,10 @@ const CommentSection = ({ postId, comments = [] }) => {
                 content: newComment.trim()
             });
 
-            // Reset form
+            // Reset form and go to first page
             setNewComment('');
+            setCommentAuthor('');
+            setCurrentPage(1);
             setCommentSuccess(true);
 
             // Hide success message after 3 seconds
@@ -81,6 +88,7 @@ const CommentSection = ({ postId, comments = [] }) => {
 
     return (
         <motion.section
+            id="comments-section"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
@@ -167,17 +175,48 @@ const CommentSection = ({ postId, comments = [] }) => {
                 </button>
             </form>
 
-            {comments.length > 5 && (
-                <div className="mb-6 text-sm text-gray-400 italic">
-                    Showing the 5 most recent comments out of {comments.length} total
-                </div>
-            )}
-
             <AnimatePresence>
-                {latestComments.length > 0 ? (
-                    latestComments.map((comment) => (
-                        <CommentThread key={comment.id} comment={comment} postId={postId} />
-                    ))
+                {paginatedComments.length > 0 ? (
+                    <>
+                        {paginatedComments.map((comment) => (
+                            <CommentThread key={comment.id} comment={comment} postId={postId} />
+                        ))}
+                        
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between mt-6 border-t border-gray-700 pt-4">
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className={`flex items-center px-4 py-2 rounded-md transition-colors ${
+                                        currentPage === 1
+                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                    }`}
+                                >
+                                    <FaChevronLeft className="mr-2" />
+                                    Previous
+                                </button>
+                                
+                                <span className="text-gray-400">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className={`flex items-center px-4 py-2 rounded-md transition-colors ${
+                                        currentPage === totalPages
+                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                    }`}
+                                >
+                                    Next
+                                    <FaChevronRight className="ml-2" />
+                                </button>
+                            </div>
+                        )}
+                    </>
                 ) : (
                     <motion.p
                         initial={{ opacity: 0 }}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -17,18 +17,62 @@ import {
     FaTimes,
     FaBold,
     FaItalic,
-    FaHeading
+    FaHeading,
+    FaExclamationTriangle
 } from 'react-icons/fa';
+
+// Constants
+const MAX_CONTENT_LENGTH = 15000; // 15,000 characters limit (about 30KB)
+const WARNING_THRESHOLD = 0.8; // Show warning at 80% of limit
+const STORAGE_WARNING_THRESHOLD = 0.7; // Show storage warning at 70% of total storage
 
 const CreateBlogPost = () => {
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState('');
     const [image, setImage] = useState(null);
+    const [charCount, setCharCount] = useState(0);
+    const [isNearLimit, setIsNearLimit] = useState(false);
+    const [storageWarning, setStorageWarning] = useState(false);
     const imageInputRef = useRef(null);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
     //custom hook to add the data to the blogpost
-    const { addBlog } = useContext(BlogContext);
+    const { addBlog, storageInfo } = useContext(BlogContext);
+
+    // Check storage usage
+    useEffect(() => {
+        if (storageInfo?.usageData?.percentUsed > STORAGE_WARNING_THRESHOLD) {
+            setStorageWarning(true);
+        } else {
+            setStorageWarning(false);
+        }
+    }, [storageInfo]);
+
+    // Tiptap Editor Configuration
+    const editor = useEditor({
+        extensions: [
+            StarterKit,
+            Image,
+            Placeholder.configure({
+                placeholder: 'Write your blog post content here...'
+            })
+        ],
+        content: '',
+        onUpdate: ({ editor }) => {
+            const content = editor.getText();
+            const count = content.length;
+            setCharCount(count);
+            setIsNearLimit(count > MAX_CONTENT_LENGTH * WARNING_THRESHOLD);
+            
+            // Prevent typing if limit is reached
+            if (count > MAX_CONTENT_LENGTH) {
+                // Truncate content to max length
+                const truncatedContent = content.slice(0, MAX_CONTENT_LENGTH);
+                editor.commands.setContent(truncatedContent);
+            }
+        }
+    });
+
     const handleAddBlog = (e) => {
         e.preventDefault();
 
@@ -36,6 +80,11 @@ const CreateBlogPost = () => {
 
         if (!title.trim() || !category || !content || content === '<p></p>' || !image) {
             alert('Please fill in all required fields.');
+            return;
+        }
+
+        if (charCount > MAX_CONTENT_LENGTH) {
+            alert(`Content exceeds the maximum length of ${MAX_CONTENT_LENGTH} characters.`);
             return;
         }
 
@@ -57,22 +106,11 @@ const CreateBlogPost = () => {
         setTitle('');
         setCategory('');
         setImage(null);
+        setCharCount(0);
+        setIsNearLimit(false);
         editor?.commands.clearContent();
         editor?.view.focus();
     };
-
-
-    // Tiptap Editor Configuration
-    const editor = useEditor({
-        extensions: [
-            StarterKit,
-            Image,
-            Placeholder.configure({
-                placeholder: 'Write your blog post content here...'
-            })
-        ],
-        content: '',
-    });
 
     // Category options
     const categories = [
@@ -103,6 +141,14 @@ const CreateBlogPost = () => {
     return (
         <div className="container mx-auto p-6">
             <div className="max-w-2xl mx-auto">
+                {/* Storage Warning */}
+                {storageWarning && (
+                    <div className="mb-4 p-3 bg-yellow-900/50 border border-yellow-700 rounded text-yellow-300">
+                        <FaExclamationTriangle className="inline mr-2" />
+                        Storage space is running low. Consider deleting some old posts or keeping your content concise.
+                    </div>
+                )}
+
                 {/* Title Input */}
                 <div className="mb-4">
                     <label className="flex items-center mb-2">
@@ -168,10 +214,24 @@ const CreateBlogPost = () => {
                     )}
 
                     {/* Editor Content */}
-                    <EditorContent
-                        editor={editor}
-                        className="border p-2 min-h-[200px]"
-                    />
+                    <div className={`relative ${isNearLimit ? 'border-2 border-yellow-500' : 'border'}`}>
+                        <EditorContent
+                            editor={editor}
+                            className="p-2 min-h-[200px]"
+                        />
+                        <div className={`absolute bottom-2 right-2 text-sm ${isNearLimit ? 'text-yellow-500' : 'text-gray-500'}`}>
+                            {isNearLimit && <FaExclamationTriangle className="inline mr-1" />}
+                            {charCount} / {MAX_CONTENT_LENGTH} characters
+                            <span className="ml-2 text-xs">
+                                (≈ {Math.round(charCount * 2 / 1024)}KB)
+                            </span>
+                        </div>
+                    </div>
+                    {isNearLimit && (
+                        <div className="mt-1 text-sm text-yellow-500">
+                            You're approaching the character limit. Consider splitting your content into multiple posts if needed.
+                        </div>
+                    )}
                 </div>
 
                 {/* Image Upload */}
