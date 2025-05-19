@@ -12,6 +12,30 @@ dist
 dist-ssr
 *.local
 
+# Build output
+build/
+
+# Public folder generated files (if dynamically generated)
+public/sitemap.xml
+public/robots.txt
+
+# Cache files
+.cache/
+*.tmp
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Coverage reports
+coverage/
+
+# OS-specific files
+Thumbs.db
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

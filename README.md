@@ -15,11 +15,26 @@ A modern, responsive blogging platform with a dark-themed aesthetic designed for
 - **Article browsing and reading** with elegant typography
 - **Category-based filtering** to easily find content
 - **Rich text editing** for content creation with TipTap editor
+  - Strict 5,000 character limit with real-time counter
+  - Visual warnings at 80% of limit
+  - Size estimation in KB
+  - Automatic truncation at limit
+- **Image handling** with smart validation
+  - Maximum size: 1MB
+  - Warning at 500KB
+  - Support for JPG, PNG, GIF, WebP
+  - File upload and URL input options
+  - Real-time validation and feedback
 - **Social sharing capabilities** for distribution across platforms
 - **Newsletter subscription** to keep readers engaged
 - **User authentication** with secure sign-up and sign-in
 - **Offline capability** through local storage persistence
 - **Smooth animations** powered by Framer Motion
+- **Storage management** with efficient data handling
+  - 5MB total storage limit
+  - Warning at 70% capacity
+  - Optimized image storage
+  - Automatic cleanup of invalid data
 
 ## 🚀 Tech Stack
 

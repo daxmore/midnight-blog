@@ -240,6 +240,8 @@ TipTap-based rich text editor for blog content creation.
   initialContent="<p>Start writing...</p>"
   onChange={handleContentChange}
   placeholder="What's on your mind?"
+  maxLength={5000}
+  onLimitReached={handleLimitReached}
 />
 ```
 
@@ -382,95 +384,131 @@ const fadeIn = {
 
 ## Rich Text Editor
 
-### TipTap Configuration
+### Content Limitations
 
-The rich text editor is built with TipTap and includes the following extensions:
+The blog editor implements strict content limitations to ensure reliable storage and optimal performance:
 
-- StarterKit (basic formatting)
-- Image (image embedding)
-- Placeholder (content placeholders)
-- Link (hyperlinks)
-- CodeBlock (syntax highlighting)
+1. **Character Limit**:
+   - Maximum content length: 5,000 characters (strictly enforced)
+   - Real-time character counting with live counter display
+   - Visual feedback at 80% of limit (yellow warning)
+   - Automatic truncation at limit
+   - Size estimation in KB displayed alongside character count
 
-### Custom Extensions
+2. **Image Handling**:
+   - Maximum image size: 1MB
+   - Warning threshold: 500KB
+   - Supported formats: JPG, PNG, GIF, WebP
+   - Two upload methods:
+     - File upload with size validation
+     - Direct image URL input
+   - Real-time validation of both file uploads and URLs
+   - Clear error messages for invalid images
+   - Automatic fallback to placeholder for oversized images
+
+### Editor Features
+
+The TipTap-based rich text editor provides:
+
+1. **Formatting Options**:
+   - Bold, italic, and heading styles
+   - Bullet and numbered lists
+   - Blockquotes
+   - Horizontal rules
+   - Image insertion
+
+2. **User Interface**:
+   - Floating toolbar with formatting options
+   - Live character counter
+   - Visual feedback for approaching limits
+   - Clear error messages
+   - Responsive design
+
+3. **Content Validation**:
+   - Real-time character counting
+   - Automatic truncation at limit
+   - HTML sanitization
+   - Image size validation
+   - Format validation
+
+### Usage Example
 
 ```jsx
-// Custom code block with syntax highlighting
-const CustomCodeBlock = CodeBlock.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      language: {
-        default: 'javascript',
-        parseHTML: element => element.getAttribute('data-language'),
-        renderHTML: attributes => {
-          return { 'data-language': attributes.language }
-        },
-      },
-    }
-  },
-});
+<RichTextEditor 
+  initialContent="<p>Start writing...</p>"
+  onChange={handleContentChange}
+  placeholder="What's on your mind?"
+  maxLength={5000}
+  onLimitReached={handleLimitReached}
+/>
 ```
 
 ## Data Storage
 
-### LocalStorage Structure
+### Local Storage Management
 
-Data is organized in localStorage with the following keys:
+The application uses localStorage for data persistence with the following features:
 
-| Key | Purpose | Structure |
-|-----|---------|-----------|
-| `blogs` | Blog posts | Array of blog objects |
-| `users` | User accounts | Array of user objects |
-| `comments` | Comment data | Object with post IDs as keys |
-| `categories` | Content categories | Array of category objects |
-| `preferences` | User preferences | Object of setting key-value pairs |
+1. **Content Storage**:
+   - Efficient storage of blog data
+   - Compressed image data
+   - Optimized content storage
+   - Metadata management
 
-### Data Models
+2. **Storage Limits**:
+   - Monitors total localStorage usage
+   - Warning at 70% storage capacity
+   - Automatic content truncation if needed
+   - Fallback mechanisms for storage overflow
 
-**Blog Post:**
-```js
+3. **Image Storage**:
+   - Base64 encoding for file uploads
+   - Direct URL storage for image links
+   - Size validation before storage
+   - Automatic compression for large images
+   - Fallback to placeholder images when needed
+
+### Storage Structure
+
+```javascript
 {
-  id: "unique-id",
-  title: "Post Title",
-  slug: "post-title",
-  content: "<p>HTML content...</p>",
-  excerpt: "Short description",
-  author: {
-    id: "author-id",
-    name: "Author Name",
-    avatar: "path/to/avatar.jpg"
-  },
-  categories: ["technology", "programming"],
-  createdAt: "2023-05-15T10:30:00Z",
-  updatedAt: "2023-05-16T14:20:00Z",
-  featuredImage: "path/to/image.jpg",
-  readTime: 5, // minutes
-  likes: 42,
-  comments: [] // or populated with comment IDs
+  blogs: [
+    {
+      id: string,
+      title: string,
+      content: string, // HTML content
+      excerpt: string,
+      image: string, // base64 or URL
+      date: string,
+      category: string,
+      slug: string,
+      comments: [
+        {
+          id: string,
+          content: string,
+          author: string,
+          date: string,
+          replies: []
+        }
+      ]
+    }
+  ]
 }
 ```
 
-**User:**
-```js
-{
-  id: "user-id",
-  username: "username",
-  email: "user@example.com",
-  name: "User's Full Name",
-  bio: "Short biography",
-  avatar: "path/to/avatar.jpg",
-  createdAt: "2023-04-10T08:15:00Z",
-  socialLinks: {
-    twitter: "https://twitter.com/username",
-    github: "https://github.com/username"
-  },
-  preferences: {
-    theme: "dark",
-    emailNotifications: true
-  }
-}
-```
+### Error Handling
+
+1. **Storage Errors**:
+   - Clear error messages for storage failures
+   - Graceful fallbacks for quota exceeded
+   - Automatic cleanup of invalid data
+   - User-friendly warnings
+
+2. **Validation Errors**:
+   - Image size and format validation
+   - Content length validation
+   - URL validation for image links
+   - Clear error messages for invalid inputs
 
 ## Performance Considerations
 

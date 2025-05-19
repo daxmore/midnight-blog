@@ -92,28 +92,43 @@ This document explains the XML files used in the Midnight Blog project, their pu
 ### Character Limits
 
 1. **Blog Content**:
-   - Maximum: 15,000 characters
-   - Warning threshold: 12,000 characters (80%)
+   - Maximum: 5,000 characters (strictly enforced)
+   - Warning threshold: 4,000 characters (80%)
+   - Real-time character counting
+   - Size estimation in KB displayed
    - Automatic truncation at limit
-   - Size estimation in KB
+   - Visual feedback with color-coded warnings
 
 2. **Comments**:
    - Maximum: 500 characters per comment
    - Warning at 400 characters
    - Truncation at limit
+   - Clear error messages
 
-3. **Storage Management**:
+3. **Image Handling**:
+   - Maximum size: 1MB
+   - Warning threshold: 500KB
+   - Supported formats: JPG, PNG, GIF, WebP
+   - Two upload methods:
+     - File upload with size validation
+     - Direct image URL input
+   - Automatic fallback to placeholder for oversized images
+
+4. **Storage Management**:
    - Total storage limit: 5MB
    - Warning at 70% capacity
-   - Automatic content preservation
-   - Fallback mechanisms
+   - Efficient storage of blog data:
+     - Compressed image data
+     - Optimized content storage
+     - Metadata management
+   - Fallback mechanisms for storage overflow
 
 ### XML Generation
 
 The XML generation process takes into account these limitations:
 
 1. **Content Truncation**:
-   - Content is truncated at 15,000 characters
+   - Content is truncated at 5,000 characters
    - Truncation is marked with ellipsis
    - Original content is preserved in localStorage
    - Truncated content is indicated in XML
@@ -123,6 +138,13 @@ The XML generation process takes into account these limitations:
    - Redundant data is removed
    - Comments are limited to 5 per post
    - Images are referenced by URL only
+   - Base64 images are compressed before storage
+
+3. **Error Handling**:
+   - Clear error messages for storage failures
+   - Graceful fallbacks for quota exceeded
+   - Automatic cleanup of invalid data
+   - User-friendly warnings
 
 ## Summary
 

@@ -68,22 +68,112 @@ The application uses browser storage APIs (localStorage/sessionStorage) to persi
 The blog editor implements strict content limitations to ensure reliable storage and performance:
 
 1. **Character Limit**:
-   - Maximum content length: 15,000 characters (≈30KB)
-   - Real-time character counting
-   - Visual feedback at 80% of limit
+   - Maximum content length: 5,000 characters (strictly enforced)
+   - Real-time character counting with live counter display
+   - Visual feedback at 80% of limit (yellow warning)
    - Automatic truncation at limit
+   - Size estimation in KB displayed alongside character count
 
-2. **Storage Management**:
+2. **Image Handling**:
+   - Maximum image size: 1MB
+   - Warning threshold: 500KB
+   - Supported formats: JPG, PNG, GIF, WebP
+   - Two upload methods:
+     - File upload with size validation
+     - Direct image URL input
+   - Real-time validation of both file uploads and URLs
+   - Clear error messages for invalid images
+   - Automatic fallback to placeholder for oversized images
+
+3. **Storage Management**:
    - Monitors total localStorage usage
    - Warning at 70% storage capacity
    - Automatic content truncation if needed
    - Fallback mechanisms for storage overflow
+   - Efficient storage of blog data:
+     - Compressed image data
+     - Optimized content storage
+     - Metadata management
 
-3. **User Feedback**:
-   - Live character counter
+4. **User Feedback**:
+   - Live character counter with KB estimation
    - Storage usage warnings
    - Visual indicators for approaching limits
-   - Size estimation in KB
+   - Color-coded warnings (yellow for approaching limit, red for exceeded)
+   - Clear error messages for invalid inputs
+
+### Image Processing and Storage
+
+The application implements a sophisticated image handling system:
+
+1. **File Upload Processing**:
+   ```javascript
+   const validateImage = async (imageData) => {
+       if (!imageData) return { isValid: true };
+       
+       if (typeof imageData === 'string') {
+           // URL validation
+           try {
+               const response = await fetch(imageData);
+               const contentType = response.headers.get('content-type');
+               const contentLength = response.headers.get('content-length');
+               
+               if (!contentType?.startsWith('image/')) {
+                   return {
+                       isValid: false,
+                       message: 'Invalid image URL'
+                   };
+               }
+               
+               if (contentLength && parseInt(contentLength) > 1024 * 1024) {
+                   return {
+                       isValid: false,
+                       message: 'Image size exceeds 1MB limit'
+                   };
+               }
+               
+               return { isValid: true };
+           } catch (error) {
+               return {
+                   isValid: false,
+                   message: 'Failed to validate image URL'
+               };
+           }
+       }
+       
+       // File validation
+       if (imageData instanceof File) {
+           const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+           if (!validTypes.includes(imageData.type)) {
+               return {
+                   isValid: false,
+                   message: 'Invalid file type'
+               };
+           }
+           
+           if (imageData.size > 1024 * 1024) {
+               return {
+                   isValid: false,
+                   message: 'File size exceeds 1MB limit'
+               };
+           }
+           
+           return { isValid: true };
+       }
+   };
+   ```
+
+2. **Storage Optimization**:
+   - Images are converted to base64 for storage
+   - Size validation before storage
+   - Automatic compression for large images
+   - Fallback to placeholder images when needed
+
+3. **Error Handling**:
+   - Clear error messages for invalid uploads
+   - Graceful fallbacks for failed validations
+   - User-friendly warnings for large files
+   - Automatic cleanup of invalid data
 
 ### Utility Libraries
 
