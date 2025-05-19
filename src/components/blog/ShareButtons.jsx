@@ -41,7 +41,7 @@ const ShareButtons = ({ title, url }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ staggerChildren: 0.1 }}
-            className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-8"
+            className="flex flex-row items-center max-sm:justify-center space-x-4 mb-8"
         >
             {shareLinks.map(({ Icon, color, href }, index) => (
                 <motion.a

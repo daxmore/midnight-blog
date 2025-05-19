@@ -4,17 +4,20 @@ import { FaEllipsisV, FaTrash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { BlogContext } from '../../context/BlogContext';
 
-const BlogCard = ({ title, excerpt, imageUrl, date, readTime, category, index, onEdit, onDelete, id, slug }) => {
+const BlogCard = ({ title, excerpt, imageUrl, date, category, index, id, slug }) => {
     const [menuOpen, setMenuOpen] = useState(false);
-
-    //remove blog post it comes from the context
     const { removeBlog } = useContext(BlogContext);
 
     // Format date for structured data
     const isoDate = new Date(date).toISOString ? new Date(date).toISOString() : '';
 
-    // Clean up excerpt by removing HTML tags before calculating length
-    const cleanExcerpt = excerpt ? excerpt.replace(/<[^>]*>?/gm, '') : '';
+    // Clean up excerpt by removing HTML tags and limiting length
+    const cleanExcerpt = excerpt 
+        ? excerpt.replace(/<[^>]*>?/gm, '').slice(0, 120) + (excerpt.length > 120 ? '...' : '')
+        : '';
+
+    // Format title to be more readable
+    const formattedTitle = title.length > 30 ? title.slice(0, 30) + '...' : title;
 
     return (
         <motion.article
@@ -57,7 +60,6 @@ const BlogCard = ({ title, excerpt, imageUrl, date, readTime, category, index, o
                                 onClick={() => {
                                     setMenuOpen(false);
                                     removeBlog(id);
-                                    onDelete?.(title);
                                 }}
                                 aria-label="Delete blog post"
                             >
@@ -72,17 +74,19 @@ const BlogCard = ({ title, excerpt, imageUrl, date, readTime, category, index, o
                     {category || 'Uncategorized'}
                 </span>
                 <h3 className="text-xl font-bold mb-2 text-white" itemProp="name">
-                    {title}
+                    {formattedTitle}
                 </h3>
                 <div
                     className="text-gray-400 mb-4 min-h-[80px]"
-                    dangerouslySetInnerHTML={{ __html: excerpt }} // Render HTML content
+                    dangerouslySetInnerHTML={{ __html: cleanExcerpt }}
                     itemProp="articleBody"
-                ></div>
+                />
                 <div className="flex justify-between items-center">
-                    <time className="text-sm text-gray-500" itemProp="datePublished" dateTime={isoDate}>{date}</time>
+                    <time className="text-sm text-gray-500" itemProp="datePublished" dateTime={isoDate}>
+                        {new Date(date).toLocaleDateString()}
+                    </time>
                     <Link 
-                        to={`/blogs/${slug || id}`} 
+                        to={`/blogs/${slug}`} 
                         className="mt-4 inline-block text-violet-400 px-4 py-2 rounded hover:text-violet-600 transition-colors"
                         aria-label={`Read full article: ${title}`}
                         itemProp="url"

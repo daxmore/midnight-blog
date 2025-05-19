@@ -140,17 +140,31 @@ const DocumentHead = ({ title, description, image, author, date, category, slug 
 const BlogDetailsPage = () => {
     const { slug } = useParams();
     const navigate = useNavigate();
-    const { blogs } = useBlog();
+    const { blogs, loading } = useBlog();
+
+    // Wait for blogs to load
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+        );
+    }
 
     const blog = blogs.find((b) => b.slug === slug);
 
     if (!slug || !blog) {
         console.error("Blog post not found or slug is missing.");
         return (
-            <div>
-                <h1>Blog Not Found</h1>
-                <p>The blog post you're looking for doesn't exist.</p>
-                <button onClick={() => navigate("/")}>Go Back to Home</button>
+            <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                <h1 className="text-2xl font-bold mb-4">Blog Not Found</h1>
+                <p className="text-gray-400 mb-6">The blog post you're looking for doesn't exist.</p>
+                <button 
+                    onClick={() => navigate("/")}
+                    className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+                >
+                    Go Back to Home
+                </button>
             </div>
         );
     }
@@ -160,7 +174,7 @@ const BlogDetailsPage = () => {
         id: blog.id,
         title: blog.title || 'Untitled Blog Post',
         content: blog.content || '<p>No content available</p>',
-        image: blog.image || null,
+        image: blog.image || '/images/default-blog.jpg', // Use a local default image
         date: blog.date || new Date().toLocaleDateString(),
         slug: blog.slug || slug,
         author: blog.author || 'Anonymous',

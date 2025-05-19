@@ -26,7 +26,7 @@ const BlogHeader = ({ title, featuredImage, author, date, readTime }) => {
                     <span>{safeAuthor.name}</span>
                 </div>
                 <span>•</span>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center text-sm space-x-2">
                     <FiClock className="text-lg" />
                     <span>{safeDate} • {safeReadTime}</span>
                 </div>

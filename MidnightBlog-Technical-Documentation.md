@@ -63,6 +63,28 @@ The application uses browser storage APIs (localStorage/sessionStorage) to persi
 - **@tiptap/extension-image 2.12.0**: Image handling in the editor
 - **@tiptap/extension-placeholder 2.12.0**: Placeholder functionality
 
+#### Content Limitations and Storage Management
+
+The blog editor implements strict content limitations to ensure reliable storage and performance:
+
+1. **Character Limit**:
+   - Maximum content length: 15,000 characters (≈30KB)
+   - Real-time character counting
+   - Visual feedback at 80% of limit
+   - Automatic truncation at limit
+
+2. **Storage Management**:
+   - Monitors total localStorage usage
+   - Warning at 70% storage capacity
+   - Automatic content truncation if needed
+   - Fallback mechanisms for storage overflow
+
+3. **User Feedback**:
+   - Live character counter
+   - Storage usage warnings
+   - Visual indicators for approaching limits
+   - Size estimation in KB
+
 ### Utility Libraries
 
 - **React Intersection Observer 9.16.0**: For implementing infinite scroll and lazy loading
@@ -248,6 +270,34 @@ import logoImage from './assets/logo.png';
 ```
 
 ## 5. Data Handling and Interactivity
+
+### LocalStorage Management
+
+The application implements a sophisticated localStorage management system:
+
+1. **Storage Limits**:
+   - Maximum content size per post: 15,000 characters
+   - Total storage limit: 5MB (typical browser limit)
+   - Warning threshold: 70% of total storage
+   - Content truncation threshold: 80% of character limit
+
+2. **Storage Optimization**:
+   - Automatic content truncation
+   - Prioritization of recent content
+   - Comment limit enforcement
+   - Image size optimization
+
+3. **Error Prevention**:
+   - Real-time size monitoring
+   - Proactive storage warnings
+   - Graceful degradation
+   - Fallback mechanisms
+
+4. **User Experience**:
+   - Clear feedback on storage status
+   - Visual indicators for limits
+   - Helpful suggestions for content management
+   - Automatic content preservation
 
 ### Client-Side Data Storage
 

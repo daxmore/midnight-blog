@@ -21,6 +21,7 @@
 - [Contributing](#contributing)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
+- [Writing and Publishing](#writing-and-publishing)
 
 ## Introduction
 
@@ -640,6 +641,49 @@ A: Yes, the project can be migrated to TypeScript. A migration guide is planned 
 
 **Q: How do I add new pages to the application?**
 A: Create a new component in the `pages` directory and add a corresponding route in `BrowserRouter.jsx`.
+
+## Writing and Publishing
+
+### Creating a New Blog Post
+
+1. Click the "Start Writing" button in the navigation bar
+2. Fill in the required fields:
+   - Title (required)
+   - Category (required)
+   - Content (required)
+   - Featured Image (optional)
+3. Use the rich text editor to format your content
+4. Preview your post before publishing
+5. Click "Publish" to make your post live
+
+### Content Guidelines
+
+1. **Title**:
+   - Maximum 100 characters
+   - Should be descriptive and engaging
+   - No special characters allowed
+
+2. **Content**:
+   - Maximum 15,000 characters (≈30KB)
+   - Supports rich text formatting
+   - Real-time character counter
+   - Visual warning at 12,000 characters (80% of limit)
+   - Automatic truncation at 15,000 characters
+
+3. **Storage Management**:
+   - Warning appears when storage reaches 70% capacity
+   - Content size shown in KB
+   - Automatic content preservation
+   - Clear feedback on storage status
+
+4. **Formatting Options**:
+   - Bold, italic, and underline text
+   - Headers (H1-H6)
+   - Lists (ordered and unordered)
+   - Links
+   - Images
+   - Code blocks
+   - Blockquotes
 
 ---
 

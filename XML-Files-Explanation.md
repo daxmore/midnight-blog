@@ -87,6 +87,43 @@ This document explains the XML files used in the Midnight Blog project, their pu
 3. **Optimized Images**: Ensure tile images are clear and properly sized
 4. **Test on Windows**: Verify appearance by pinning your site in Edge browser
 
+## Content Limitations
+
+### Character Limits
+
+1. **Blog Content**:
+   - Maximum: 15,000 characters
+   - Warning threshold: 12,000 characters (80%)
+   - Automatic truncation at limit
+   - Size estimation in KB
+
+2. **Comments**:
+   - Maximum: 500 characters per comment
+   - Warning at 400 characters
+   - Truncation at limit
+
+3. **Storage Management**:
+   - Total storage limit: 5MB
+   - Warning at 70% capacity
+   - Automatic content preservation
+   - Fallback mechanisms
+
+### XML Generation
+
+The XML generation process takes into account these limitations:
+
+1. **Content Truncation**:
+   - Content is truncated at 15,000 characters
+   - Truncation is marked with ellipsis
+   - Original content is preserved in localStorage
+   - Truncated content is indicated in XML
+
+2. **Storage Optimization**:
+   - XML files are optimized for size
+   - Redundant data is removed
+   - Comments are limited to 5 per post
+   - Images are referenced by URL only
+
 ## Summary
 
 These XML files significantly improve your website's discoverability and user experience with minimal effort. They represent best practices in modern web development and show attention to detail in your project.

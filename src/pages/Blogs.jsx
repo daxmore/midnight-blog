@@ -85,36 +85,8 @@ const Blogs = () => {
                 onCategoryChange={handleCategoryChange} 
                 onSearch={handleSearch} 
             />
-
-            <main className="max-w-7xl mx-auto px-4 py-8" id="blog-results">
-                <section className="mb-16">
-                    <motion.div className="flex justify-between items-center mb-6">
-                        <motion.h2
-                            className="text-2xl font-bold text-white"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.4 }}
-                        >
-                            {activeCategory === 'All' ? 'Latest Articles' : `${activeCategory} Articles`}
-                        </motion.h2>
-
-                        {searchTerm && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="text-gray-400"
-                            >
-                                Search results for: <span className="text-blue-400">"{searchTerm}"</span>
-                                <button 
-                                    className="ml-2 text-sm text-gray-500 hover:text-white"
-                                    onClick={() => setSearchTerm('')}
-                                >
-                                    (clear)
-                                </button>
-                            </motion.div>
-                        )}
-                    </motion.div>
-
+            <main className="container mx-auto px-4 py-8">
+                <section id="blog-results" className="mt-8">
                     {filteredPosts.length > 0 ? (
                         <>
                             <motion.div
@@ -123,48 +95,38 @@ const Blogs = () => {
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.5 }}
                             >
-                                {paginatedPosts.map((post, index) => {
-                                    // Ensure post has a slug or use ID as fallback
-                                    const postWithSlug = {
-                                        ...post,
-                                        slug: post.slug || post.id.toString()
-                                    };
-                                    
-                                    return (
-                                    <div key={postWithSlug.id}>
-                                        <BlogCard
-                                            id={postWithSlug.id} 
-                                            title={postWithSlug.title.length > 30 ? postWithSlug.title.slice(0, 30) + '...' : postWithSlug.title}
-                                            category={postWithSlug.category}
-                                            excerpt={postWithSlug.content ? 
-                                                (postWithSlug.content.length > 120 ? postWithSlug.content.slice(0, 120) + '...' : postWithSlug.content) 
-                                                : 'No content available'}
-                                            imageUrl={postWithSlug.image}
-                                            date={postWithSlug.date}
-                                            slug={postWithSlug.slug}
-                                            index={index}
-                                        />
-                                    </div>
-                                    );
-                                })}
+                                {paginatedPosts.map((post, index) => (
+                                    <BlogCard
+                                        key={post.id}
+                                        id={post.id}
+                                        title={post.title}
+                                        category={post.category}
+                                        excerpt={post.excerpt || post.content}
+                                        imageUrl={post.image}
+                                        date={post.date}
+                                        slug={post.slug || post.id.toString()}
+                                        index={index}
+                                    />
+                                ))}
                             </motion.div>
 
-                            {/* Pagination Navigation */}
+                            {/* Pagination */}
                             {totalPages > 1 && (
                                 <motion.div
-                                    className="flex justify-center items-center mt-12"
+                                    className="flex justify-center items-center mt-8 space-x-2"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    transition={{ delay: 0.5 }}
+                                    transition={{ duration: 0.5 }}
                                 >
                                     {/* Previous Button */}
                                     <motion.button
                                         onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                                         disabled={currentPage === 1}
-                                        className={`mr-4 px-4 py-2 rounded-lg transition-colors duration-300 ${currentPage === 1
-                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                                            }`}
+                                        className={`px-4 py-2 rounded-lg transition-colors duration-300 ${
+                                            currentPage === 1
+                                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                        }`}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                     >
@@ -178,10 +140,11 @@ const Blogs = () => {
                                     <motion.button
                                         onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                                         disabled={currentPage === totalPages}
-                                        className={`ml-4 px-4 py-2 rounded-lg transition-colors duration-300 ${currentPage === totalPages
-                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                                            }`}
+                                        className={`ml-4 px-4 py-2 rounded-lg transition-colors duration-300 ${
+                                            currentPage === totalPages
+                                                ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                        }`}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                     >
