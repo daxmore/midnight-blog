@@ -30,7 +30,7 @@ const getStorageUsage = () => {
     try {
         const blogsData = localStorage.getItem(STORAGE_KEY);
         const totalSize = blogsData ? blogsData.length * 2 : 0; // Unicode characters can use up to 2 bytes
-        
+
         return {
             totalBytes: totalSize,
             percentUsed: totalSize / MAX_STORAGE_SIZE,
@@ -56,11 +56,11 @@ const checkStorageQuota = () => {
         }
 
         const usage = getStorageUsage();
-        
+
         return {
             available: true,
             usageData: usage,
-            message: usage.isNearingLimit 
+            message: usage.isNearingLimit
                 ? `Storage usage is high (${Math.round(usage.percentUsed * 100)}%)`
                 : "Storage is available"
         };
@@ -90,7 +90,7 @@ const limitContentSize = (content, maxSize = MAX_CONTENT_SIZE) => {
         const lastPeriod = content.slice(0, maxSize).lastIndexOf('.');
         const lastParagraph = content.slice(0, maxSize).lastIndexOf('</p>');
         const cutoffPoint = Math.max(lastPeriod, lastParagraph);
-        
+
         if (cutoffPoint > 0) {
             newContent = content.slice(0, cutoffPoint + 1);
             if (lastParagraph > 0) {
@@ -100,7 +100,7 @@ const limitContentSize = (content, maxSize = MAX_CONTENT_SIZE) => {
             // If no good cutoff point found, just truncate at maxSize
             newContent = content.slice(0, maxSize) + '...';
         }
-        
+
         truncated = true;
     }
 
@@ -121,14 +121,14 @@ const estimateBlogSize = (blog) => {
     } catch (e) {
         // Fallback size estimation for complex objects
         let size = 0;
-        
+
         // Estimate major fields
         if (blog.title) size += blog.title.length * 2;
         if (blog.content) size += blog.content.length * 2;
         if (blog.excerpt) size += blog.excerpt.length * 2;
         if (blog.image) size += 1000; // Assume URL is around 500 bytes
         if (blog.comments) size += blog.comments.length * 500; // Rough estimate per comment
-        
+
         return size;
     }
 };
@@ -164,7 +164,7 @@ const processImage = (imageUrl, imageFile = null) => {
         warning: null,
         type: 'none'
     };
-    
+
     // If it's a direct URL
     if (imageUrl && !imageUrl.startsWith('data:image')) {
         if (!isValidImageUrl(imageUrl)) {
@@ -182,12 +182,12 @@ const processImage = (imageUrl, imageFile = null) => {
             type: 'url'
         };
     }
-    
+
     // If it's a base64 image or file
     const imageData = imageFile || imageUrl;
     if (imageData) {
         const size = imageFile ? imageFile.size : Math.ceil((imageData.length * 3) / 4);
-        
+
         if (size > MAX_IMAGE_SIZE) {
             return {
                 url: '/images/placeholder.jpg',
@@ -196,7 +196,7 @@ const processImage = (imageUrl, imageFile = null) => {
                 type: 'file'
             };
         }
-        
+
         if (size > IMAGE_WARNING_SIZE) {
             return {
                 url: imageFile ? URL.createObjectURL(imageFile) : imageData,
@@ -205,7 +205,7 @@ const processImage = (imageUrl, imageFile = null) => {
                 type: 'file'
             };
         }
-        
+
         return {
             url: imageFile ? URL.createObjectURL(imageFile) : imageData,
             size: size,
@@ -213,7 +213,7 @@ const processImage = (imageUrl, imageFile = null) => {
             type: 'file'
         };
     }
-    
+
     return {
         url: '',
         size: 0,
@@ -226,7 +226,7 @@ const processImage = (imageUrl, imageFile = null) => {
 const compressBlogData = (post) => {
     // Process and compress the content
     const content = post.content || '';
-    const compressedContent = content.length > MAX_CONTENT_SIZE 
+    const compressedContent = content.length > MAX_CONTENT_SIZE
         ? content.slice(0, MAX_CONTENT_SIZE) + '...'
         : content;
 
@@ -278,26 +278,26 @@ const manageStorage = (posts) => {
     try {
         // Clear existing storage first
         localStorage.removeItem(STORAGE_KEY);
-        
+
         // Sort posts by date (newest first)
         const sortedPosts = [...posts].sort((a, b) => new Date(b.date) - new Date(a.date));
-        
+
         // Keep only the most recent posts up to MAX_BLOGS_TO_STORE
         const postsToKeep = sortedPosts.slice(0, MAX_BLOGS_TO_STORE);
-        
+
         // Compress the data
         const compressedData = postsToKeep.map(compressBlogData);
-        
+
         // Try to store the compressed data
         const jsonString = JSON.stringify(compressedData);
-        
+
         // Check if the data is too large
         if (jsonString.length * 2 > MAX_STORAGE_SIZE) {
             // If too large, try storing fewer posts
             const minimalPosts = postsToKeep.slice(0, Math.floor(MAX_BLOGS_TO_STORE / 2));
             const minimalData = minimalPosts.map(compressBlogData);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(minimalData));
-            
+
             return {
                 success: true,
                 storageInfo: {
@@ -307,10 +307,10 @@ const manageStorage = (posts) => {
                 }
             };
         }
-        
+
         // Store the data
         localStorage.setItem(STORAGE_KEY, jsonString);
-        
+
         return {
             success: true,
             storageInfo: {
@@ -320,13 +320,13 @@ const manageStorage = (posts) => {
         };
     } catch (error) {
         console.error('Error saving blog data:', error);
-        
+
         // If storage fails, try to store even fewer posts
         try {
             const minimalPosts = posts.slice(0, 2); // Try storing just 2 posts
             const compressedData = minimalPosts.map(compressBlogData);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(compressedData));
-            
+
             return {
                 success: true,
                 storageInfo: {
@@ -347,9 +347,9 @@ const manageStorage = (posts) => {
 // Modify saveBlogDataToLocalStorage to use the new management system
 const saveBlogDataToLocalStorage = (posts) => {
     console.log('Attempting to save blogs to localStorage:', { postCount: posts.length });
-    
+
     const result = manageStorage(posts);
-    
+
     if (result.success) {
         console.log('Successfully saved to localStorage:', {
             storedPosts: result.storageInfo.postsProcessed,
@@ -359,7 +359,7 @@ const saveBlogDataToLocalStorage = (posts) => {
     } else {
         console.warn('Failed to save to localStorage:', result.error);
     }
-    
+
     return result;
 };
 
@@ -397,16 +397,16 @@ export const BlogProvider = ({ children }) => {
             try {
                 const savedBlogData = localStorage.getItem(STORAGE_KEY);
                 console.log('Raw data from localStorage:', savedBlogData ? 'Data exists' : 'No data found');
-                
+
                 if (savedBlogData) {
                     const compressedData = JSON.parse(savedBlogData);
                     const decompressedData = compressedData.map(decompressBlogData);
-                    console.log('Successfully parsed data:', { 
+                    console.log('Successfully parsed data:', {
                         blogCount: decompressedData.length
                     });
                     setBlogs(decompressedData);
                 }
-                
+
                 const storageStatus = updateStorageInfo();
                 console.log('Storage status after load:', storageStatus);
             } catch (error) {
@@ -435,19 +435,19 @@ export const BlogProvider = ({ children }) => {
     const addBlog = useCallback((blog) => {
         // Check storage status before adding
         const currentStorage = updateStorageInfo();
-        
+
         // Show warning if storage is nearing capacity
         if (currentStorage.usageData?.isNearingLimit) {
             throw new Error('Storage is nearly full. Please clear some space before adding new posts.');
         }
-        
+
         // Ensure slug is properly set
         const slug = blog.slug ||
             (blog.title ? blog.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : `post-${Date.now()}`);
 
         // Check content size and truncate if necessary
         const contentResult = limitContentSize(blog.content);
-        
+
         const newBlog = {
             ...blog,
             id: Date.now(),
@@ -473,7 +473,7 @@ export const BlogProvider = ({ children }) => {
                 if (!result.success) {
                     setPersistenceEnabled(false);
                 }
-                
+
                 // Update storage info
                 setStorageInfo(result.storageInfo);
             }
@@ -492,7 +492,7 @@ export const BlogProvider = ({ children }) => {
                 if (!result.success) {
                     setPersistenceEnabled(false);
                 }
-                
+
                 // Update storage info
                 setStorageInfo(result.storageInfo);
             }
@@ -509,7 +509,7 @@ export const BlogProvider = ({ children }) => {
                 if (blog.id.toString() !== blogId.toString()) {
                     return blog;
                 }
-                
+
                 // Check if comment limit is reached
                 if (blog.comments && blog.comments.length >= MAX_COMMENTS_PER_POST) {
                     throw new Error(`Maximum comment limit of ${MAX_COMMENTS_PER_POST} reached for this post`);
@@ -519,7 +519,7 @@ export const BlogProvider = ({ children }) => {
                 if (commentData.content.length > MAX_COMMENT_LENGTH) {
                     throw new Error(`Comment exceeds maximum length of ${MAX_COMMENT_LENGTH} characters`);
                 }
-                
+
                 // Create new comment object with ID and date
                 const newComment = {
                     id: Date.now(),
@@ -530,18 +530,18 @@ export const BlogProvider = ({ children }) => {
                     date: new Date().toLocaleDateString(),
                     replies: []
                 };
-                
+
                 // Add to existing comments or create new array
-                const updatedComments = blog.comments 
+                const updatedComments = blog.comments
                     ? [newComment, ...blog.comments]
                     : [newComment];
-                
+
                 return {
                     ...blog,
                     comments: updatedComments
                 };
             });
-            
+
             // Try to persist changes
             if (persistenceEnabled) {
                 const result = saveBlogDataToLocalStorage(updatedBlogs);
@@ -550,7 +550,7 @@ export const BlogProvider = ({ children }) => {
                 }
                 setStorageInfo(result.storageInfo);
             }
-            
+
             return updatedBlogs;
         });
     }, [persistenceEnabled]);
@@ -563,18 +563,18 @@ export const BlogProvider = ({ children }) => {
                 if (blog.id.toString() !== blogId.toString()) {
                     return blog;
                 }
-                
+
                 // Filter out the comment to be removed
                 const updatedComments = blog.comments.filter(
                     comment => comment.id.toString() !== commentId.toString()
                 );
-                
+
                 return {
                     ...blog,
                     comments: updatedComments
                 };
             });
-            
+
             // Try to persist changes
             if (persistenceEnabled) {
                 const result = saveBlogDataToLocalStorage(updatedBlogs);
@@ -583,7 +583,7 @@ export const BlogProvider = ({ children }) => {
                 }
                 setStorageInfo(result.storageInfo);
             }
-            
+
             return updatedBlogs;
         });
     }, [persistenceEnabled]);

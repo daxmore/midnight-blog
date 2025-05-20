@@ -12,7 +12,7 @@ const BlogCard = ({ title, excerpt, imageUrl, date, category, index, id, slug })
     const isoDate = new Date(date).toISOString ? new Date(date).toISOString() : '';
 
     // Clean up excerpt by removing HTML tags and limiting length
-    const cleanExcerpt = excerpt 
+    const cleanExcerpt = excerpt
         ? excerpt.replace(/<[^>]*>?/gm, '').slice(0, 120) + (excerpt.length > 120 ? '...' : '')
         : '';
 
@@ -34,7 +34,7 @@ const BlogCard = ({ title, excerpt, imageUrl, date, category, index, id, slug })
             <meta itemProp="author" content="Midnight Blog" />
             {isoDate && <meta itemProp="datePublished" content={isoDate} />}
             {category && <meta itemProp="keywords" content={category} />}
-            
+
             {imageUrl && (
                 <img
                     src={imageUrl}
@@ -85,8 +85,8 @@ const BlogCard = ({ title, excerpt, imageUrl, date, category, index, id, slug })
                     <time className="text-sm text-gray-500" itemProp="datePublished" dateTime={isoDate}>
                         {new Date(date).toLocaleDateString()}
                     </time>
-                    <Link 
-                        to={`/blogs/${slug}`} 
+                    <Link
+                        to={`/blogs/${slug}`}
                         className="mt-4 inline-block text-violet-400 px-4 py-2 rounded hover:text-violet-600 transition-colors"
                         aria-label={`Read full article: ${title}`}
                         itemProp="url"

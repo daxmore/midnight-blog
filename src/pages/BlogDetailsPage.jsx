@@ -95,11 +95,11 @@ const DocumentHead = ({ title, description, image, author, date, category, slug 
         if (schemaScript) {
             document.head.removeChild(schemaScript);
         }
-        
+
         schemaScript = document.createElement('script');
         schemaScript.setAttribute('id', 'blog-schema');
         schemaScript.setAttribute('type', 'application/ld+json');
-        
+
         const schemaData = {
             "@context": "https://schema.org",
             "@type": "BlogPosting",
@@ -128,10 +128,10 @@ const DocumentHead = ({ title, description, image, author, date, category, slug 
                 "@id": `${window.location.origin}/blogs/${slug}`
             }
         };
-        
+
         schemaScript.textContent = JSON.stringify(schemaData);
         document.head.appendChild(schemaScript);
-        
+
     }, [title, description, image, author, date, category, slug]);
 
     return null; // This component doesn't render anything
@@ -159,7 +159,7 @@ const BlogDetailsPage = () => {
             <div className="min-h-screen flex flex-col items-center justify-center p-4">
                 <h1 className="text-2xl font-bold mb-4">Blog Not Found</h1>
                 <p className="text-gray-400 mb-6">The blog post you're looking for doesn't exist.</p>
-                <button 
+                <button
                     onClick={() => navigate("/")}
                     className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
                 >
@@ -194,7 +194,7 @@ const BlogDetailsPage = () => {
             >
                 <DocumentHead
                     title={`${safeBlog.title} | Midnight Blog`}
-                    description={safeBlog.excerpt} 
+                    description={safeBlog.excerpt}
                     image={safeBlog.image}
                     author={safeBlog.author}
                     date={safeBlog.date}
@@ -223,7 +223,7 @@ const BlogDetailsPage = () => {
                             <AuthorBioCard
                                 author={safeBlog.author}
                             />
-                            
+
                             <CommentSection
                                 postId={safeBlog.id}
                                 comments={safeBlog.comments}
