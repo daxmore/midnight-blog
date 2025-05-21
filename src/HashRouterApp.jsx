@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { HashRouter, Route, Routes } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import { BlogProvider } from './context/BlogContext';
@@ -24,11 +24,11 @@ const LoadingSpinner = () => (
 );
 
 /**
- * Router using BrowserRouter for environments supporting HTML5 history API
+ * Router using HashRouter for environments supporting HTML5 history API
  */
-const BrowserRouterApp = () => {
+const HashRouterApp = () => {
     return (
-        <BrowserRouter>
+        <HashRouter>
             <BlogProvider>
                 <DeleteCommentProvider>
                     <div className="min-h-screen bg-gradient-to-t from-[#000000] to-[#1f2937] text-gray-300">
@@ -53,8 +53,8 @@ const BrowserRouterApp = () => {
                     </div>
                 </DeleteCommentProvider>
             </BlogProvider>
-        </BrowserRouter>
+        </HashRouter>
     );
 };
 
-export default BrowserRouterApp;
+export default HashRouterApp;

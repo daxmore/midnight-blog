@@ -1,9 +1,9 @@
-import BrowserRouterApp from "./BrowserRouter";
+import HashRouterApp from "./HashRouterApp";
 
 function App() {
   return (
     <>
-      <BrowserRouterApp />
+      <HashRouterApp />
     </>
   );
 }
