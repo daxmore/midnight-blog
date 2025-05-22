@@ -437,9 +437,9 @@ export const BlogProvider = ({ children }) => {
         const currentStorage = updateStorageInfo();
 
         // Show warning if storage is nearing capacity
-        if (currentStorage.usageData?.isNearingLimit) {
-            throw new Error('Storage is nearly full. Please clear some space before adding new posts.');
-        }
+        // if (currentStorage.usageData?.isNearingLimit) {
+        //     throw new Error('Storage is nearly full. Please clear some space before adding new posts.');
+        // }
 
         // Ensure slug is properly set
         const slug = blog.slug ||
