@@ -25,7 +25,7 @@ A modern, responsive blogging platform with a dark-themed aesthetic designed for
   - Support for JPG, PNG, GIF, WebP
   - File upload and URL input options
   - Real-time validation and feedback
-- **Social sharing capabilities** for distribution across platforms
+
 - **Newsletter subscription** to keep readers engaged
 - **User authentication** with secure sign-up and sign-in
 - **Offline capability** through local storage persistence

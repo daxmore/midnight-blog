@@ -136,7 +136,7 @@ The XML generation process takes into account these limitations:
 2. **Storage Optimization**:
    - XML files are optimized for size
    - Redundant data is removed
-   - Comments are limited to 5 per post
+   
    - Images are referenced by URL only
    - Base64 images are compressed before storage
 

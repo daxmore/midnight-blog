@@ -4,12 +4,15 @@ import { FaEllipsisV, FaTrash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { BlogContext } from '../../context/BlogContext';
 
-const BlogCard = ({ title, excerpt, imageUrl, date, category, index, id, slug }) => {
+const BlogCard = ({ title = 'Untitled', excerpt, imageUrl, date, category, index, id, slug }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const { removeBlog } = useContext(BlogContext);
 
     // Format date for structured data
-    const isoDate = new Date(date).toISOString ? new Date(date).toISOString() : '';
+    const dateObj = date ? new Date(date) : null;
+    const isValidDate = dateObj && !isNaN(dateObj.getTime());
+    const isoDate = isValidDate ? dateObj.toISOString() : '';
+    const displayDate = isValidDate ? dateObj.toLocaleDateString() : 'Date not available';
 
     // Clean up excerpt by removing HTML tags and limiting length
     const cleanExcerpt = excerpt
@@ -17,7 +20,7 @@ const BlogCard = ({ title, excerpt, imageUrl, date, category, index, id, slug })
         : '';
 
     // Format title to be more readable
-    const formattedTitle = title.length > 30 ? title.slice(0, 30) + '...' : title;
+    const formattedTitle = title && title.length > 30 ? title.slice(0, 30) + '...' : title;
 
     return (
         <motion.article

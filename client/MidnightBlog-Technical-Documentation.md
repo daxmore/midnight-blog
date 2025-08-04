@@ -11,7 +11,7 @@ Midnight Blog is a modern, responsive blogging platform designed for writers to 
 - Category-based filtering
 - User authentication (sign-up/sign-in)
 - Rich text editing for content creation
-- Social sharing capabilities
+
 - Newsletter subscription
 - Responsive design for all devices
 
@@ -253,7 +253,7 @@ const BrowserRouterApp = () => {
                         </Routes>
                         <Footer />
                     </div>
-                </DeleteCommentProvider>
+                
             </BlogProvider>
         </BrowserRouter>
     );

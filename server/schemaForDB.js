@@ -9,55 +9,6 @@ import mongoose from 'mongoose';
 // ==================================
 
 /**
- * @schema ReplySchema
- * Defines the structure for a reply to a comment.
- * This is intended to be a sub-document within the Comment schema.
- */
-const ReplySchema = new mongoose.Schema({
-    author: {
-        type: String,
-        required: [true, 'Author name is required.'],
-        trim: true,
-        default: 'Anonymous'
-    },
-    content: {
-        type: String,
-        required: [true, 'Reply content is required.'],
-        trim: true,
-        maxlength: [500, 'Reply content cannot exceed 500 characters.']
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
-
-/**
- * @schema CommentSchema
- * Defines the structure for a comment on a blog post.
- * It includes an array of nested replies.
- */
-const CommentSchema = new mongoose.Schema({
-    author: {
-        type: String,
-        required: [true, 'Author name is required.'],
-        trim: true,
-        default: 'Anonymous'
-    },
-    content: {
-        type: String,
-        required: [true, 'Comment content is required.'],
-        trim: true,
-        maxlength: [1000, 'Comment content cannot exceed 1000 characters.']
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    replies: [ReplySchema] // Nested sub-documents for replies
-});
-
-/**
  * @schema AuthorSchema
  * Defines the structure for a blog post author.
  * This can be embedded in the BlogSchema or kept as a separate collection
@@ -96,7 +47,7 @@ const AuthorSchema = new mongoose.Schema({
 /**
  * @schema BlogSchema
  * Defines the main structure for a blog post.
- * This schema brings together the author, content, and comments.
+ * This schema brings together the author and content.
  */
 const BlogSchema = new mongoose.Schema({
     title: {
@@ -143,7 +94,6 @@ const BlogSchema = new mongoose.Schema({
         type: AuthorSchema, // Embedded author sub-document
         default: () => ({}) // Ensures a default author object is created
     },
-    comments: [CommentSchema], // Array of comment sub-documents
     readTime: {
         type: String,
         default: '5 min read'

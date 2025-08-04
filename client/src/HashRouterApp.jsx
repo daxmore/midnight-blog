@@ -31,28 +31,29 @@ const HashRouterApp = () => {
         <HashRouter>
             <BlogProvider>
                 <div className="min-h-screen bg-gradient-to-t from-[#000000] to-[#1f2937] text-gray-300">
-                        <Navbar />
-                        <Suspense fallback={<LoadingSpinner />}>
-                            <Routes>
-                                <Route path="/" element={<Home />} />
-                                <Route path="/blogs" element={<Blogs />} />
-                                <Route path="/about" element={<About />} />
-                                <Route path="/contact" element={<Contact />} />
-                                <Route path="/start-writing" element={<StartWriting />} />
-                                <Route
-                                    path="*"
-                                    element={<ErrorPage errorCode="404" errorMessage="Page Not Found" />}
-                                />
-                                <Route path="/signup" element={<SigninForm />} />
-                                <Route path="/signin" element={<SignupForm />} />
-                                <Route path="/blogs/:slug" element={<BlogDetailsPage />} />
-                            </Routes>
-                        </Suspense>
-                        <Footer />
-                    </div>
+                    <Navbar />
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/blogs" element={<Blogs />} />
+                            <Route path="/about" element={<About />} />
+                            <Route path="/contact" element={<Contact />} />
+                            <Route path="/start-writing" element={<StartWriting />} />
+                            <Route
+                                path="*"
+                                element={<ErrorPage errorCode="404" errorMessage="Page Not Found" />}
+                            />
+                            <Route path="/signup" element={<SigninForm />} />
+                            <Route path="/signin" element={<SignupForm />} />
+                            <Route path="/blogs/:slug" element={<BlogDetailsPage />} />
+                        </Routes>
+                    </Suspense>
+                    <Footer />
+                </div>
             </BlogProvider>
         </HashRouter>
     );
 };
 
 export default HashRouterApp;
+

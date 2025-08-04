@@ -37,7 +37,7 @@ This documentation serves as a comprehensive guide for developers working on the
 - **Category System**: Filter content by categories
 - **User Authentication**: Sign-up and sign-in capabilities
 - **Rich Text Editor**: Full-featured content creation interface
-- **Social Sharing**: Integrated tools for sharing content
+
 - **Newsletter Subscription**: User engagement through newsletters
 - **Responsive Design**: Optimized for all device sizes
 
@@ -471,15 +471,7 @@ The application uses localStorage for data persistence with the following featur
       date: string,
       category: string,
       slug: string,
-      comments: [
-        {
-          id: string,
-          content: string,
-          author: string,
-          date: string,
-          replies: []
-        }
-      ]
+      
     }
   ]
 }

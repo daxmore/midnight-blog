@@ -179,7 +179,6 @@ const BlogDetailsPage = () => {
         slug: blog.slug || slug,
         author: blog.author || 'Anonymous',
         readTime: blog.readTime || '5 min read',
-        comments: blog.comments || [],
         excerpt: blog.excerpt || 'Blog post details',
         category: blog.category || 'Blog'
     };
@@ -213,10 +212,7 @@ const BlogDetailsPage = () => {
 
                     <div className="grid md:grid-cols-[1fr_auto] gap-8 mt-12">
                         <div>
-                            <ShareButtons
-                                title={safeBlog.title}
-                                url={`/blogs/${safeBlog.slug}`}
-                            />
+                            
 
                             <BlogContent content={safeBlog.content} />
 
