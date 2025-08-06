@@ -1,0 +1,5 @@
+output of console for blogs 
+
+"CreateBlogPost.jsx:278 Error adding blog: ReferenceError: API_URL is not defined
+    at handleAddBlog (CreateBlogPost.jsx:263:33)
+"

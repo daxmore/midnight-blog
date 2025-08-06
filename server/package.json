@@ -9,12 +9,15 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "mongoose": "^8.16.5"
+    "express-validator": "^7.1.0",
+    "mongoose": "^8.16.5",
+    "jsonwebtoken": "^9.0.2"
   }
 }

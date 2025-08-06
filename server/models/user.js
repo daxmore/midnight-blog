@@ -1,10 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-/**
- * @schema UserSchema
- * Defines the structure for a user, including authentication details.
- */
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -31,13 +27,10 @@ const UserSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+}, {
+    timestamps: true
 });
 
-// Hash password before saving the user
 UserSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
         return next();
@@ -47,9 +40,8 @@ UserSchema.pre('save', async function(next) {
     next();
 });
 
-// Method to compare passwords
 UserSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-export const User = mongoose.model('User', UserSchema);
+export const User = mongoose.model('User', UserSchema, 'auth_data');

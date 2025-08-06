@@ -2,9 +2,11 @@
 
 This document outlines the MongoDB schema structures used in the Midnight Blog application, designed for use with Mongoose.
 
-## 1. Blog Schema (`server/schemaForDB.js`)
+## 1. Blog Schema (`server/models/blog.js`)
 
 This schema defines the structure for individual blog posts, including content, metadata, and author information.
+
+-   **`user`**: `ObjectId`, Required. References the `User` model. This field tracks which user created the blog post.
 
 ### `AuthorSchema` (Sub-document)
 
@@ -13,9 +15,6 @@ Defines the structure for a blog post author. This is embedded within the `BlogS
 -   **`name`**: `String`, Required. Default: 'Anonymous Author'.
 -   **`avatar`**: `String` (URL to the avatar image). Default: 'https://via.placeholder.com/150'.
 -   **`bio`**: `String`, MaxLength: 500 characters. Default: 'Information about this author is not available.'.
--   **`socialLinks`**: `Array` of objects.
-    -   **`platform`**: `String`, Enum: ['twitter', 'github', 'linkedin'].
-    -   **`url`**: `String`.
 
 ### `BlogSchema` (Main Document)
 
@@ -35,9 +34,9 @@ Defines the structure for a blog post author. This is embedded within the `BlogS
 -   `category`: Indexed for efficient filtering.
 -   `publishedAt`: Indexed for sorting by most recent posts.
 
-**Mongoose Model:** `Blog` (interacts with the `blogs` collection).
+**Mongoose Model:** `Blog` (interacts with the `blog_data` collection).
 
-## 2. User Schema (`server/authSchema.js`)
+## 2. User Schema (`server/models/user.js`)
 
 This schema defines the structure for user accounts, including authentication credentials and roles.
 
@@ -55,4 +54,4 @@ This schema defines the structure for user accounts, including authentication cr
 **Methods:**
 -   **`matchPassword(enteredPassword)`**: An asynchronous method to compare a provided password with the stored hashed password using `bcrypt.compare()`.
 
-**Mongoose Model:** `User` (interacts with the `users` collection).
+**Mongoose Model:** `User` (interacts with the `auth_data` collection).
