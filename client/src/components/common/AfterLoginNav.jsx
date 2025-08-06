@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Feather } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from '../../context/AuthContext';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
+    const { logout } = useAuth();
 
     const handleNavigation = (path) => {
         navigate(path);
@@ -62,11 +64,17 @@ const Navbar = () => {
                     <Link to="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link>
 
                     <button
-                        onClick={() => navigate("/signin")}
+                        onClick={() => navigate("/start-writing")}
                         className="px-4 py-2 bg-white text-black rounded hover:bg-gray-200 transition-colors flex items-center"
                     >
-                        Login
+                        Start Writing
                         <Feather className="ml-2" size={16} />
+                    </button>
+                    <button
+                        onClick={logout}
+                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center"
+                    >
+                        Logout
                     </button>
                 </nav>
             </div>
@@ -99,12 +107,19 @@ const Navbar = () => {
                             ))}
 
                             <motion.button
-                                onClick={() => handleNavigation("/signin")}
+                                onClick={() => handleNavigation("/start-writing")}
                                 whileTap={{ scale: 0.95 }}
                                 className="w-full bg-white text-black py-3 rounded flex items-center justify-center"
                             >
-                                Login
+                                Start Writing
                                 <Feather className="ml-2" size={16} />
+                            </motion.button>
+                            <motion.button
+                                onClick={logout}
+                                whileTap={{ scale: 0.95 }}
+                                className="w-full bg-red-600 text-white py-3 rounded flex items-center justify-center"
+                            >
+                                Logout
                             </motion.button>
                         </div>
                     </motion.div>

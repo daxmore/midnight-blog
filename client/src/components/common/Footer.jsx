@@ -68,20 +68,7 @@ const Footer = () => {
                     <p className="text-gray-400 leading-relaxed">
                         Unlock worlds with every word. Explore powerful ideas and deep insights from writers who dare to dream.
                     </p>
-                    <div className="flex space-x-4">
-                        {socialLinks.map((social) => (
-                            <a
-                                key={social.name}
-                                href={social.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-gray-400 hover:text-white transition-colors duration-300"
-                                aria-label={social.ariaLabel}
-                            >
-                                {social.icon}
-                            </a>
-                        ))}
-                    </div>
+                    
                 </div>
 
                 {/* Quick Links */}

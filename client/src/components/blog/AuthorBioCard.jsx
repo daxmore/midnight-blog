@@ -7,7 +7,7 @@ const AuthorBioCard = ({ author }) => {
     const defaultAuthor = {
         name: 'Anonymous Author',
         bio: 'Information about this author is not available.',
-        avatar: 'https://via.placeholder.com/150',
+        avatar: 'src/assets/images/daxmore.jpg',
         socialLinks: []
     };
 
@@ -23,7 +23,7 @@ const AuthorBioCard = ({ author }) => {
         >
             {authorData.avatar ? (
                 <img
-                    src={authorData.avatar}
+                    src={authorData.avatar || '/src/assets/images/daxmore.jpg'}
                     alt={authorData.name}
                     className="w-24 h-24 rounded-full object-cover"
                 />
@@ -35,24 +35,7 @@ const AuthorBioCard = ({ author }) => {
             <div>
                 <h3 className="text-2xl font-bold text-white">{authorData.name}</h3>
                 <p className="text-gray-400 mb-4">{authorData.bio}</p>
-                {authorData.socialLinks && authorData.socialLinks.length > 0 && (
-                    <div className="flex space-x-4">
-                        {authorData.socialLinks.map((link, index) => (
-                            <motion.a
-                                key={index}
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                whileHover={{ scale: 1.2 }}
-                                className="text-gray-300 hover:text-white"
-                            >
-                                {link.platform === 'twitter' && <FaTwitter />}
-                                {link.platform === 'github' && <FaGithub />}
-                                {link.platform === 'linkedin' && <FaLinkedin />}
-                            </motion.a>
-                        ))}
-                    </div>
-                )}
+                
             </div>
         </motion.div>
     );

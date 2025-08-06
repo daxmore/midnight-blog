@@ -89,32 +89,7 @@ const AuthorDetails = () => {
                             ))}
                         </div>
                     </div>
-                    {/* Social & Contact */}
-                    <div className="mt-12 flex justify-center space-x-6">
-                        <a
-                            href="https://github.com/daxmore"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-300 hover:text-white hover:scale-110 transition-transform"
-                        >
-                            <Github className="h-9 w-9" />
-                        </a>
-                        <a
-                            href="https://www.linkedin.com/in/daksh-more-262215364/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-300 hover:text-white hover:scale-110 transition-transform"
-                        >
-                            <Linkedin className="h-9 w-9" />
-                        </a>
-                        <a
-                            href="https://x.com/"
-                            rel="noopener noreferrer"
-                            className="text-gray-300 hover:text-white hover:scale-110 transition-transform"
-                        >
-                            <Twitter className="h-9 w-9" />
-                        </a>
-                    </div>
+                    
                 </div>
             </section>
         </>

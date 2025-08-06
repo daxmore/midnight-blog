@@ -114,37 +114,28 @@ This document explains the XML files used in the Midnight Blog project, their pu
      - Direct image URL input
    - Automatic fallback to placeholder for oversized images
 
-4. **Storage Management**:
-   - Total storage limit: 5MB
-   - Warning at 70% capacity
-   - Efficient storage of blog data:
-     - Compressed image data
-     - Optimized content storage
-     - Metadata management
-   - Fallback mechanisms for storage overflow
+4. **Data Storage**: Data is stored in a MongoDB database, not locally.
 
 ### XML Generation
 
 The XML generation process takes into account these limitations:
 
 1. **Content Truncation**:
-   - Content is truncated at 5,000 characters
-   - Truncation is marked with ellipsis
-   - Original content is preserved in localStorage
-   - Truncated content is indicated in XML
+   - Content is truncated at 5,000 characters.
+   - Truncation is marked with ellipsis.
+   - Truncated content is indicated in XML.
 
 2. **Storage Optimization**:
-   - XML files are optimized for size
-   - Redundant data is removed
-   
-   - Images are referenced by URL only
-   - Base64 images are compressed before storage
+   - XML files are optimized for size.
+   - Redundant data is removed.
+   - Images are referenced by URL only.
+   - Base64 images are compressed before storage.
 
 3. **Error Handling**:
-   - Clear error messages for storage failures
-   - Graceful fallbacks for quota exceeded
-   - Automatic cleanup of invalid data
-   - User-friendly warnings
+   - Clear error messages for storage failures.
+   - Graceful fallbacks for quota exceeded.
+   - Automatic cleanup of invalid data.
+   - User-friendly warnings.
 
 ## Summary
 

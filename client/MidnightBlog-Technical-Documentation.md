@@ -15,16 +15,16 @@ Midnight Blog is a modern, responsive blogging platform designed for writers to 
 - Newsletter subscription
 - Responsive design for all devices
 
-### Frontend-Only Architecture
+### MERN Stack Architecture
 
-Midnight Blog is currently implemented as a frontend-only application that simulates backend functionality through client-side storage mechanisms. This approach allows for:
+Midnight Blog is now implemented as a full-stack application using the MERN (MongoDB, Express.js, React, Node.js) stack. This approach provides:
 
-1. **Rapid Development**: Eliminating backend dependencies accelerates the development cycle
-2. **Offline Functionality**: Users can interact with the application even without an internet connection
-3. **Reduced Complexity**: No need for server management or database administration
-4. **Lower Hosting Costs**: Static site hosting is generally less expensive than running servers
+1.  **Persistent Data Storage**: Data is stored securely in a MongoDB database.
+2.  **Robust Backend Logic**: Handles user authentication, data validation, and API endpoints.
+3.  **Scalability**: Designed for future expansion and increased user load.
+4.  **Industry Standard**: Utilizes widely adopted technologies for modern web development.
 
-The application uses browser storage APIs (localStorage/sessionStorage) to persist data across sessions, simulating a database. All business logic is executed in the browser, with state management handling data flow between components.
+All business logic is now primarily handled on the server-side, with the frontend focusing on UI and user interaction. Data persistence is achieved through API calls to the backend, which then interacts with MongoDB.
 
 ## 2. Technologies and Tools Used
 
@@ -32,6 +32,17 @@ The application uses browser storage APIs (localStorage/sessionStorage) to persi
 
 - **React 19.1.0**: The latest version of React is used as the primary UI library
 - **JSX/TSX**: Component templating with JSX syntax
+
+### Backend Technologies
+
+- **Node.js**: JavaScript runtime for the backend.
+- **Express.js**: Web framework for building the RESTful API.
+- **MongoDB**: NoSQL database for data storage.
+- **Mongoose**: Object Data Modeling (ODM) library for MongoDB and Node.js.
+- **jsonwebtoken**: For creating and verifying JSON Web Tokens (JWTs) for authentication.
+- **bcryptjs**: For hashing passwords securely.
+- **cors**: Middleware for enabling Cross-Origin Resource Sharing.
+- **dotenv**: For loading environment variables from a `.env` file.
 
 ### Build and Development Tools
 
@@ -63,9 +74,9 @@ The application uses browser storage APIs (localStorage/sessionStorage) to persi
 - **@tiptap/extension-image 2.12.0**: Image handling in the editor
 - **@tiptap/extension-placeholder 2.12.0**: Placeholder functionality
 
-#### Content Limitations and Storage Management
+#### Content Limitations and Data Handling
 
-The blog editor implements strict content limitations to ensure reliable storage and performance:
+The blog editor implements strict content limitations to ensure reliable data handling and optimal performance:
 
 1. **Character Limit**:
    - Maximum content length: 5,000 characters (strictly enforced)
@@ -85,26 +96,19 @@ The blog editor implements strict content limitations to ensure reliable storage
    - Clear error messages for invalid images
    - Automatic fallback to placeholder for oversized images
 
-3. **Storage Management**:
-   - Monitors total localStorage usage
-   - Warning at 70% storage capacity
-   - Automatic content truncation if needed
-   - Fallback mechanisms for storage overflow
-   - Efficient storage of blog data:
-     - Compressed image data
-     - Optimized content storage
-     - Metadata management
+3. **Data Handling**:
+   - Data is sent to the backend API for storage in MongoDB.
+   - Efficient storage of blog data, including optimized content and metadata.
 
 4. **User Feedback**:
-   - Live character counter with KB estimation
-   - Storage usage warnings
-   - Visual indicators for approaching limits
-   - Color-coded warnings (yellow for approaching limit, red for exceeded)
-   - Clear error messages for invalid inputs
+   - Live character counter with KB estimation.
+   - Visual indicators for approaching limits.
+   - Color-coded warnings (yellow for approaching limit, red for exceeded).
+   - Clear error messages for invalid inputs.
 
 ### Image Processing and Storage
 
-The application implements a sophisticated image handling system:
+The application implements a sophisticated image handling system, with images being processed on the frontend and then sent to the backend for storage.
 
 1. **File Upload Processing**:
    ```javascript
@@ -164,16 +168,16 @@ The application implements a sophisticated image handling system:
    ```
 
 2. **Storage Optimization**:
-   - Images are converted to base64 for storage
-   - Size validation before storage
-   - Automatic compression for large images
-   - Fallback to placeholder images when needed
+   - Images are converted to base64 for transmission to the backend.
+   - Size validation before transmission.
+   - Automatic compression for large images.
+   - Fallback to placeholder images when needed.
 
 3. **Error Handling**:
-   - Clear error messages for invalid uploads
-   - Graceful fallbacks for failed validations
-   - User-friendly warnings for large files
-   - Automatic cleanup of invalid data
+   - Clear error messages for invalid uploads.
+   - Graceful fallbacks for failed validations.
+   - User-friendly warnings for large files.
+   - Automatic cleanup of invalid data.
 
 ### Utility Libraries
 
@@ -213,8 +217,8 @@ midnight-blog/
 
 - **src/main.jsx**: Application entry point where React is initialized
 - **src/App.jsx**: Root component that wraps the router
-- **src/BrowserRouter.jsx**: Defines the routing structure of the application
-- **src/context/**: Contains context providers for state management (BlogContext, etc.)
+- **src/HashRouterApp.jsx**: Defines the routing structure of the application and handles conditional Navbar rendering.
+- **src/context/**: Contains context providers for state management (`BlogContext`, `AuthContext`, etc.)
 - **src/components/common/**: Shared UI components used across multiple pages
 - **src/components/blog/**: Components specific to blog functionality
 - **src/pages/**: Top-level page components corresponding to routes
@@ -223,41 +227,76 @@ midnight-blog/
 
 ### Routing System
 
-Midnight Blog uses React Router v7 for client-side routing. The routing configuration is defined in `BrowserRouter.jsx`:
+Midnight Blog uses React Router v7 for client-side routing. The routing configuration is defined in `HashRouterApp.jsx`:
 
 ```jsx
-// BrowserRouter.jsx
-import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Home from './pages/Home';
-import Blogs from './pages/Blogs';
-// Additional imports...
+// HashRouterApp.jsx
+import React, { lazy, Suspense } from 'react';
+import { HashRouter, Route, Routes } from 'react-router-dom';
+import Navbar from './components/common/Navbar';
+import AfterLoginNav from './components/common/AfterLoginNav';
+import { BlogProvider } from './context/BlogContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Footer from './components/common/Footer';
 
-const BrowserRouterApp = () => {
+// Lazy load page components
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Blogs = lazy(() => import('./pages/Blogs'));
+const StartWriting = lazy(() => import('./pages/StartWriting'));
+const ErrorPage = lazy(() => import('./pages/ErrorPage'));
+const SignupForm = lazy(() => import('./components/auth/SignupForm'));
+const SigninForm = lazy(() => import('./components/auth/SigninForm'));
+const BlogDetailsPage = lazy(() => import('./pages/BlogDetailsPage'));
+
+// Loading component for Suspense fallback
+const LoadingSpinner = () => (
+    <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+);
+
+const HashRouterApp = () => {
     return (
-        <BrowserRouter>
-            <BlogProvider>
-                <DeleteCommentProvider>
-                    <div className="min-h-screen bg-gradient-to-t from-[#000000] to-[#1f2937] text-gray-300">
-                        <Navbar />
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/blogs" element={<Blogs />} />
-                            <Route path="/about" element={<About />} />
-                            <Route path="/contact" element={<Contact />} />
-                            <Route path="/start-writing" element={<StartWriting />} />
-                            <Route path="*" element={<ErrorPage errorCode="404" errorMessage="Page Not Found" />} />
-                            <Route path="/signup" element={<SignupForm />} />
-                            <Route path="/signin" element={<SigninForm />} />
-                            <Route path="/blogs/:slug" element={<BlogDetailsPage />} />
-                        </Routes>
-                        <Footer />
-                    </div>
-                
-            </BlogProvider>
-        </BrowserRouter>
+        <HashRouter>
+            <AuthProvider>
+                <BlogProvider>
+                    <AppContent />
+                </BlogProvider>
+            </AuthProvider>
+        </HashRouter>
     );
 };
+
+const AppContent = () => {
+    const { isLoggedIn } = useAuth();
+
+    return (
+        <div className="min-h-screen bg-gradient-to-t from-[#000000] to-[#1f2937] text-gray-300">
+            {isLoggedIn ? <AfterLoginNav /> : <Navbar />}
+            <Suspense fallback={<LoadingSpinner />}>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/blogs" element={<Blogs />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/start-writing" element={<StartWriting />} />
+                    <Route
+                        path="*"
+                        element={<ErrorPage errorCode="404" errorMessage="Page Not Found" />}
+                    />
+                    <Route path="/signin" element={<SigninForm />} />
+                    <Route path="/signup" element={<SignupForm />} />
+                    <Route path="/blogs/:slug" element={<BlogDetailsPage />} />
+                </Routes>
+            </Suspense>
+            <Footer />
+        </div>
+    );
+};
+
+export default HashRouterApp;
 ```
 
 The routing system handles:
@@ -360,127 +399,26 @@ import logoImage from './assets/logo.png';
 
 ## 5. Data Handling and Interactivity
 
-### LocalStorage Management
+### Backend Data Persistence
 
-The application implements a sophisticated localStorage management system:
+Data persistence is now handled by a MongoDB database through the Node.js/Express.js backend. This ensures data is stored reliably and persistently.
 
-1. **Storage Limits**:
-   - Maximum content size per post: 15,000 characters
-   - Total storage limit: 5MB (typical browser limit)
-   - Warning threshold: 70% of total storage
-   - Content truncation threshold: 80% of character limit
-
-2. **Storage Optimization**:
-   - Automatic content truncation
-   - Prioritization of recent content
-   - Comment limit enforcement
-   - Image size optimization
-
-3. **Error Prevention**:
-   - Real-time size monitoring
-   - Proactive storage warnings
-   - Graceful degradation
-   - Fallback mechanisms
-
-4. **User Experience**:
-   - Clear feedback on storage status
-   - Visual indicators for limits
-   - Helpful suggestions for content management
-   - Automatic content preservation
-
-### Client-Side Data Storage
-
-In this frontend-only implementation, data persistence is achieved through:
-
-1. **localStorage**: For long-term data persistence
-   - Blog posts
-   - User preferences
-   - Authentication tokens
-
-2. **sessionStorage**: For session-specific data
-   - Form drafts
-   - UI state between page navigations
-
-3. **URL Query Parameters**: For shareable state
-   - Filter selections
-   - Search queries
-   - Page numbers
-
-### Data Flow Between Components
+### Client-Side Data Flow
 
 Data flows through the application via:
 
-1. **Context API**: For global state accessible across components
-2. **Props**: For direct parent-to-child communication
-3. **Custom Hooks**: For encapsulating and sharing behavior
-
-Example of a custom hook for blog operations:
-
-```jsx
-// useBlog.js
-export const useBlog = () => {
-    const context = useContext(BlogContext);
-    if (!context) {
-        throw new Error('useBlog must be used within a BlogProvider');
-    }
-    return context;
-};
-
-// Usage in a component
-const { blogs, addBlog } = useBlog();
-```
+1.  **Context API**: For global state accessible across components (e.g., `BlogContext`, `AuthContext`).
+2.  **Props**: For direct parent-to-child communication.
+3.  **Custom Hooks**: For encapsulating and sharing behavior.
 
 ### User Interaction Logic
 
 User interactions are handled through:
 
-1. **Event Handlers**: Direct response to user actions
-2. **Form Management**: Controlled components for form inputs
-3. **Modal Systems**: For dialogs and confirmations
-
-Example of a form handling pattern:
-
-```jsx
-const ContactForm = () => {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        message: ''
-    });
-    
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-    
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Store in localStorage as we don't have a backend
-        const submissions = JSON.parse(localStorage.getItem('contactSubmissions') || '[]');
-        submissions.push({
-            ...formData,
-            id: Date.now(),
-            submittedAt: new Date().toISOString()
-        });
-        localStorage.setItem('contactSubmissions', JSON.stringify(submissions));
-        
-        // Reset form
-        setFormData({ name: '', email: '', message: '' });
-        
-        // Show success message
-        alert('Your message has been sent!');
-    };
-    
-    return (
-        <form onSubmit={handleSubmit}>
-            {/* Form fields */}
-        </form>
-    );
-};
-```
+1.  **Event Handlers**: Direct response to user actions.
+2.  **Form Management**: Controlled components for form inputs.
+3.  **API Calls**: Frontend components make asynchronous requests to the backend API to perform CRUD operations (Create, Read, Update, Delete).
+4.  **Modal Systems**: For dialogs and confirmations.
 
 ## 6. Performance Optimization
 
@@ -491,7 +429,7 @@ The application uses React Router's code splitting capabilities to reduce initia
 ```jsx
 // Lazy loading routes
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 
 const Home = lazy(() => import('./pages/Home'));
 const Blogs = lazy(() => import('./pages/Blogs'));
@@ -499,7 +437,7 @@ const Blogs = lazy(() => import('./pages/Blogs'));
 
 const App = () => {
     return (
-        <BrowserRouter>
+        <HashRouter>
             <Suspense fallback={<LoadingSpinner />}>
                 <Routes>
                     <Route path="/" element={<Home />} />
@@ -507,7 +445,7 @@ const App = () => {
                     {/* Other routes */}
                 </Routes>
             </Suspense>
-        </BrowserRouter>
+        </HashRouter>
     );
 };
 ```
@@ -516,70 +454,15 @@ const App = () => {
 
 Images are optimized using several techniques:
 
-1. **Responsive Images**: Different image sizes for different viewports
-2. **Lazy Loading**: Images load only when they enter the viewport
-3. **Next-Gen Formats**: WebP images are used when supported
+1. **Responsive Images**: Different image sizes for different viewports.
+2. **Lazy Loading**: Images load only when they enter the viewport.
+3. **Next-Gen Formats**: WebP images are used when supported.
 
-Example of responsive image implementation:
+## 7. Backend Integration
 
-```jsx
-<img 
-    src="/images/blog-thumbnail-small.jpg"
-    srcSet="
-        /images/blog-thumbnail-small.jpg 400w,
-        /images/blog-thumbnail-medium.jpg 800w,
-        /images/blog-thumbnail-large.jpg 1200w
-    "
-    sizes="(max-width: 600px) 400px, (max-width: 1200px) 800px, 1200px"
-    loading="lazy"
-    alt="Blog thumbnail"
-/>
-```
+Midnight Blog now fully integrates a RESTful API backend. This section outlines the current backend architecture and how the frontend interacts with it.
 
-### Caching Strategy
-
-Client-side caching is implemented to reduce redundant data loading:
-
-1. **Memory Cache**: Short-lived data stored in memory
-2. **localStorage Cache**: Longer-term cache with TTL (Time To Live)
-
-Example caching implementation:
-
-```jsx
-// Cached fetch utility
-const cachedFetch = async (url, options = {}) => {
-    const cacheKey = `cache_${url}`;
-    const cachedData = localStorage.getItem(cacheKey);
-    
-    if (cachedData) {
-        const { data, timestamp, ttl } = JSON.parse(cachedData);
-        const isExpired = Date.now() > timestamp + ttl;
-        
-        if (!isExpired) {
-            return data;
-        }
-    }
-    
-    // Fetch fresh data if no cache or expired
-    const response = await fetch(url, options);
-    const data = await response.json();
-    
-    // Cache the new data
-    localStorage.setItem(cacheKey, JSON.stringify({
-        data,
-        timestamp: Date.now(),
-        ttl: 60 * 60 * 1000 // 1 hour cache
-    }));
-    
-    return data;
-};
-```
-
-## 7. Extending the Project with a Backend
-
-### Recommended Backend Architecture
-
-For Midnight Blog, a RESTful API backend would be the most straightforward integration:
+### Backend Architecture
 
 ```
 CLIENT <---> REST API <---> DATABASE
@@ -591,151 +474,26 @@ This approach offers:
 - Scalability
 - Technology flexibility
 
-### Backend Technology Recommendations
+### Backend Technologies
 
-1. **Node.js/Express**: 
-   - JavaScript throughout the stack
-   - Large ecosystem of libraries
-   - Easy integration with React
-
-2. **Database Options**:
-   - **MongoDB**: Document-based storage ideal for blog content
-   - **PostgreSQL**: Relational DB for structured data and relationships
-
-3. **Authentication**:
-   - **JWT (JSON Web Tokens)**: Stateless authentication
-   - **OAuth**: For social login integration
+1.  **Node.js/Express**: The core of the backend, providing a robust API.
+2.  **MongoDB**: The primary database for storing application data.
+3.  **Mongoose**: Used for object data modeling, simplifying interactions with MongoDB.
+4.  **JWT (JSON Web Tokens)**: For secure, stateless authentication.
 
 ### Integration Strategy
 
-To connect the frontend to a backend:
-
-1. **Create API Service Layer**:
-
-```jsx
-// api/blogService.js
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-export const fetchBlogs = async () => {
-    try {
-        const response = await axios.get(`${API_URL}/blogs`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching blogs', error);
-        throw error;
-    }
-};
-
-export const fetchBlogBySlug = async (slug) => {
-    try {
-        const response = await axios.get(`${API_URL}/blogs/${slug}`);
-        return response.data;
-    } catch (error) {
-        console.error(`Error fetching blog with slug ${slug}`, error);
-        throw error;
-    }
-};
-
-// Additional API methods...
-```
-
-2. **Update Context Providers**:
-
-```jsx
-// BlogContext.jsx with API integration
-export const BlogProvider = ({ children }) => {
-    const [blogs, setBlogs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    
-    const fetchAllBlogs = async () => {
-        try {
-            setLoading(true);
-            const data = await blogService.fetchBlogs();
-            setBlogs(data);
-            setError(null);
-        } catch (err) {
-            setError('Failed to fetch blogs');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    useEffect(() => {
-        fetchAllBlogs();
-    }, []);
-    
-    // Rest of the context provider...
-};
-```
+The frontend communicates with the backend via Axios HTTP requests. Context Providers (`BlogContext`, `AuthContext`) are responsible for managing state and making API calls.
 
 ### Authentication Implementation
 
-For user authentication with a backend:
+User authentication is handled via JWTs:
 
-1. **JWT-based Authentication Flow**:
-   - User logs in, receives a token
-   - Token is stored in localStorage or HTTP-only cookies
-   - Token is sent with subsequent requests
-
-2. **Auth Context**:
-
-```jsx
-// AuthContext.jsx
-export const AuthContext = createContext();
-
-export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    
-    useEffect(() => {
-        // Check if user is logged in on mount
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            try {
-                // Decode token or validate with backend
-                const user = decodeToken(token); // Custom function
-                setCurrentUser(user);
-            } catch (err) {
-                // Invalid token
-                localStorage.removeItem('authToken');
-            }
-        }
-        setLoading(false);
-    }, []);
-    
-    const login = async (credentials) => {
-        try {
-            const response = await authService.login(credentials);
-            const { token, user } = response.data;
-            localStorage.setItem('authToken', token);
-            setCurrentUser(user);
-            return user;
-        } catch (error) {
-            throw error;
-        }
-    };
-    
-    const logout = () => {
-        localStorage.removeItem('authToken');
-        setCurrentUser(null);
-    };
-    
-    return (
-        <AuthContext.Provider value={{ 
-            currentUser, 
-            loading, 
-            login, 
-            logout 
-        }}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
-```
+1.  **Login/Signup**: User credentials are sent to the backend.
+2.  **Token Issuance**: Upon successful authentication, the backend issues a JWT.
+3.  **Client-Side Storage**: The JWT is stored in `localStorage` on the client.
+4.  **Protected Routes**: The JWT is sent with subsequent requests to protected backend routes (e.g., creating a blog post) in the `Authorization: Bearer <token>` header.
+5.  **Token Verification**: Backend middleware verifies the JWT to authenticate and authorize requests.
 
 ## 8. Best Practices and Maintainability
 
@@ -868,6 +626,6 @@ describe('Button component', () => {
 
 ## Conclusion
 
-Midnight Blog demonstrates a modern approach to frontend development with React. The application's architecture emphasizes component reusability, state isolation, and progressive enhancement. While currently implemented as a frontend-only solution, the design facilitates future integration with backend services.
+Midnight Blog demonstrates a modern approach to full-stack web development with React, Node.js, Express.js, and MongoDB. The application's architecture emphasizes component reusability, state isolation, and robust backend integration.
 
-The technologies chosen—React, Vite, TailwindCSS, and supporting libraries—provide a robust foundation for a scalable and maintainable codebase. By following the best practices outlined in this documentation, developers can extend and enhance the application while maintaining code quality and performance. 
+The technologies chosen provide a strong foundation for a scalable and maintainable codebase. By following the best practices outlined in this documentation, developers can extend and enhance the application while maintaining code quality and performance. 

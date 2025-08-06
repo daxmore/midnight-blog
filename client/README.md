@@ -28,13 +28,8 @@ A modern, responsive blogging platform with a dark-themed aesthetic designed for
 
 - **Newsletter subscription** to keep readers engaged
 - **User authentication** with secure sign-up and sign-in
-- **Offline capability** through local storage persistence
+- **Persistent data storage** using MongoDB
 - **Smooth animations** powered by Framer Motion
-- **Storage management** with efficient data handling
-  - 5MB total storage limit
-  - Warning at 70% capacity
-  - Optimized image storage
-  - Automatic cleanup of invalid data
 
 ## 🚀 Tech Stack
 
@@ -45,7 +40,13 @@ A modern, responsive blogging platform with a dark-themed aesthetic designed for
 - **TipTap 2.12.0** - Headless, extensible rich text editor
 - **Framer Motion** - Animation library for React
 - **FontAwesome/Heroicons/Lucide** - Icon libraries
-- **localStorage/sessionStorage** - Client-side data persistence
+- **Node.js** - Backend runtime
+- **Express.js** - Web framework for Node.js
+- **MongoDB** - NoSQL Database
+- **Mongoose** - MongoDB ODM for Node.js
+- **jsonwebtoken** - JWT for authentication
+- **bcryptjs** - Password hashing
+- **axios** - Promise based HTTP client for the browser and node.js
 
 ## 📚 Documentation
 
@@ -108,15 +109,15 @@ midnight-blog/
 
 ## 🚧 Current Status
 
-Midnight Blog is currently implemented as a frontend-only application that simulates backend functionality through client-side storage mechanisms. It uses browser storage APIs (localStorage/sessionStorage) to persist data across sessions.
+Midnight Blog is now implemented as a full-stack application using the MERN (MongoDB, Express.js, React, Node.js) stack. It uses a MongoDB database for persistent data storage and a Node.js/Express.js backend for API services.
 
 ### Roadmap
 
 - [ ] Add user profile customization
 - [ ] Implement dark/light theme toggle
-- [ ] Integrate with a real backend API
 - [ ] Add comment moderation features
 - [ ] Implement search functionality
+- [ ] Implement an admin panel for content and user management.
 
 ## 👥 Contributing
 

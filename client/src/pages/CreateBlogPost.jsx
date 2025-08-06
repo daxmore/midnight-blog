@@ -28,6 +28,7 @@ import {
     FaRedo,
     FaExclamationCircle
 } from 'react-icons/fa';
+import axios from 'axios';
 
 // Constants
 const MAX_CONTENT_LENGTH = 5000; // Strict 5000 characters limit
@@ -48,15 +49,7 @@ const CreateBlogPost = () => {
     const fileInputRef = useRef(null);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
-    //custom hook to add the data to the blogpost
-    const { storageInfo } = useContext(BlogContext);
-
-    // Check storage usage
-    useEffect(() => {
-        if (storageInfo?.usageData?.percentUsed > STORAGE_WARNING_THRESHOLD) {
-            alert('Storage space is running low. Consider deleting some old posts or keeping your content concise.');
-        }
-    }, [storageInfo]);
+    
 
     // Tiptap Editor Configuration
     const editor = useEditor({
@@ -250,7 +243,8 @@ const CreateBlogPost = () => {
                 content: editor.getHTML(),
                 category,
                 image: imageData,
-                excerpt: editor.getText().replace(/<[^>]*>/g, '').slice(0, 150) + '...'
+                excerpt: editor.getText().replace(/<[^>]*>/g, '').slice(0, 150) + '...',
+                author: 'Dax More' // Replace with actual author data
             };
 
             await addBlog(blogData);

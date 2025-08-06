@@ -58,20 +58,7 @@ const ContactInformation = () => {
                                 <span>123 Tech Lane, Innovation City</span>
                             </div>
                         </div>
-                        <div className="mt-8 flex space-x-6">
-                            {socialLinks.map((social, index) => (
-                                <motion.a
-                                    key={index}
-                                    href={social.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    whileHover={{ scale: 1.2 }}
-                                    className={`${social.color} text-3xl hover:opacity-80 transition`}
-                                >
-                                    <FontAwesomeIcon icon={social.icon} className="h-8 w-8" />
-                                </motion.a>
-                            ))}
-                        </div>
+                        
                     </div>
                 </motion.div>
             </div>

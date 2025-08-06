@@ -1,8 +1,10 @@
 import React, { lazy, Suspense } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
-import Footer from './components/common/Footer';
+import AfterLoginNav from './components/common/AfterLoginNav';
 import { BlogProvider } from './context/BlogContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Footer from './components/common/Footer';
 
 
 // Lazy load page components
@@ -29,29 +31,39 @@ const LoadingSpinner = () => (
 const HashRouterApp = () => {
     return (
         <HashRouter>
-            <BlogProvider>
-                <div className="min-h-screen bg-gradient-to-t from-[#000000] to-[#1f2937] text-gray-300">
-                    <Navbar />
-                    <Suspense fallback={<LoadingSpinner />}>
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/blogs" element={<Blogs />} />
-                            <Route path="/about" element={<About />} />
-                            <Route path="/contact" element={<Contact />} />
-                            <Route path="/start-writing" element={<StartWriting />} />
-                            <Route
-                                path="*"
-                                element={<ErrorPage errorCode="404" errorMessage="Page Not Found" />}
-                            />
-                            <Route path="/signup" element={<SigninForm />} />
-                            <Route path="/signin" element={<SignupForm />} />
-                            <Route path="/blogs/:slug" element={<BlogDetailsPage />} />
-                        </Routes>
-                    </Suspense>
-                    <Footer />
-                </div>
-            </BlogProvider>
+            <AuthProvider>
+                <BlogProvider>
+                    <AppContent />
+                </BlogProvider>
+            </AuthProvider>
         </HashRouter>
+    );
+};
+
+const AppContent = () => {
+    const { isLoggedIn } = useAuth();
+
+    return (
+        <div className="min-h-screen bg-gradient-to-t from-[#000000] to-[#1f2937] text-gray-300">
+            {isLoggedIn ? <AfterLoginNav /> : <Navbar />}
+            <Suspense fallback={<LoadingSpinner />}>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/blogs" element={<Blogs />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/start-writing" element={<StartWriting />} />
+                    <Route
+                        path="*"
+                        element={<ErrorPage errorCode="404" errorMessage="Page Not Found" />}
+                    />
+                    <Route path="/signin" element={<SigninForm />} />
+                    <Route path="/signup" element={<SignupForm />} />
+                    <Route path="/blogs/:slug" element={<BlogDetailsPage />} />
+                </Routes>
+            </Suspense>
+            <Footer />
+        </div>
     );
 };
 

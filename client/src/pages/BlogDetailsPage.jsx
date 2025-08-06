@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import BlogHeader from '../components/blog/BlogHeader';
 import BlogContent from '../components/blog/BlogContent';
-import ShareButtons from '../components/blog/ShareButtons';
 import AuthorBioCard from '../components/blog/AuthorBioCard';
 
 import NewsletterCTA from '../components/common/NewsletterCTA';
@@ -174,7 +173,7 @@ const BlogDetailsPage = () => {
         id: blog.id,
         title: blog.title || 'Untitled Blog Post',
         content: blog.content || '<p>No content available</p>',
-        image: blog.image || '/images/default-blog.jpg', // Use a local default image
+        image: blog.featuredImage || '/images/default-blog.jpg', // Use a local default image
         date: blog.date || new Date().toLocaleDateString(),
         slug: blog.slug || slug,
         author: blog.author || 'Anonymous',
@@ -212,15 +211,11 @@ const BlogDetailsPage = () => {
 
                     <div className="grid md:grid-cols-[1fr_auto] gap-8 mt-12">
                         <div>
-                            
-
                             <BlogContent content={safeBlog.content} />
 
                             <AuthorBioCard
                                 author={safeBlog.author}
                             />
-
-                            
                         </div>
                     </div>
 

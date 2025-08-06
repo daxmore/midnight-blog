@@ -97,14 +97,14 @@ const Blogs = () => {
                             >
                                 {paginatedPosts.map((post, index) => (
                                     <BlogCard
-                                        key={post.id}
-                                        id={post.id}
+                                        key={post._id}
+                                        id={post._id}
                                         title={post.title}
                                         category={post.category}
                                         excerpt={post.excerpt || post.content}
-                                        imageUrl={post.image}
-                                        date={post.date}
-                                        slug={post.slug || post.id.toString()}
+                                        imageUrl={post.featuredImage}
+                                        date={post.createdAt}
+                                        slug={post.slug}
                                         index={index}
                                     />
                                 ))}

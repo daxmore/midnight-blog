@@ -51,6 +51,14 @@ This documentation serves as a comprehensive guide for developers working on the
 | React Router DOM | 7.6.0 | Client-side routing |
 | TipTap | 2.12.0 | Rich text editing |
 | Framer Motion | 12.12.1 | Animations and transitions |
+| Node.js | LTS | Backend runtime |
+| Express.js | 5.x | Web framework for Node.js |
+| MongoDB | 6.x | NoSQL Database |
+| Mongoose | 8.x | MongoDB ODM for Node.js |
+| jsonwebtoken | 9.x | JWT for authentication |
+| bcryptjs | 2.x | Password hashing |
+| cors | 2.x | Cross-Origin Resource Sharing |
+| dotenv | 17.x | Environment variable management |
 
 ### Design Principles
 
@@ -62,28 +70,28 @@ This documentation serves as a comprehensive guide for developers working on the
 
 ## Architecture
 
-### Frontend-Only Implementation
+### MERN Stack Implementation
 
-Midnight Blog is currently implemented as a frontend-only application that simulates backend functionality using browser storage. This approach was chosen to:
+Midnight Blog is implemented as a full-stack application using the MERN (MongoDB, Express.js, React, Node.js) stack. This approach provides:
 
-1. Accelerate development process
-2. Allow for offline functionality
-3. Simplify the initial deployment process
-4. Reduce hosting costs
+1.  **Persistent Data Storage**: Data is stored securely in a MongoDB database.
+2.  **Robust Backend Logic**: Handles user authentication, data validation, and API endpoints.
+3.  **Scalability**: Designed for future expansion and increased user load.
+4.  **Industry Standard**: Utilizes widely adopted technologies for modern web development.
 
 ### Data Flow
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│                 │     │                 │     │                 │
-│  User Actions   │────▶│  React State    │────▶│  localStorage   │
-│                 │     │  Context API    │     │  sessionStorage │
-│                 │     │                 │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-        │                       ▲                        │
-        │                       │                        │
-        └───────────────────────┴────────────────────────┘
-                           Sync/Update
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │     │                 │
+│  User Actions   │────▶│  React State    │────▶│  Express.js API │────▶│  MongoDB        │
+│                 │     │  Context API    │     │  (Node.js)      │     │                 │
+│                 │     │                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
+        ▲                       │                        │                       │
+        │                       │                        │                       │
+        └───────────────────────┴────────────────────────┴───────────────────────┘
+                           Data Fetching & Updates
 ```
 
 ### Component Architecture
@@ -179,9 +187,10 @@ midnight-blog/
 |------|-------------|
 | `src/main.jsx` | Application entry point that initializes React |
 | `src/App.jsx` | Root component containing theme providers and router |
-| `src/BrowserRouter.jsx` | Defines application routing structure |
+| `src/BrowserRouter.jsx` | Defines application routing structure and handles conditional Navbar rendering |
 | `public/brand-colors.css` | CSS variables for brand colors |
-| `src/context/BlogContext.jsx` | Manages blog data state |
+| `src/context/BlogContext.jsx` | Manages blog data state and API interactions |
+| `src/context/AuthContext.jsx` | Manages user authentication state and API interactions |
 
 ## Component Documentation
 
@@ -189,7 +198,7 @@ midnight-blog/
 
 #### `<Navbar />`
 
-The top navigation bar providing site navigation and user actions.
+The top navigation bar for logged-out users, providing site navigation and user actions.
 
 **Props:**
 - `transparent` (boolean): Whether the navbar should have a transparent background
@@ -197,6 +206,15 @@ The top navigation bar providing site navigation and user actions.
 **Usage:**
 ```jsx
 <Navbar transparent={true} />
+```
+
+#### `<AfterLoginNav />`
+
+The top navigation bar for logged-in users, providing site navigation, user-specific actions, and a logout button.
+
+**Usage:**
+```jsx
+<AfterLoginNav />
 ```
 
 #### `<BlogCard />`
@@ -264,28 +282,29 @@ Midnight Blog uses React Context API for global state management, with key conte
 
 ### BlogContext
 
-Manages blog posts, categories, and related operations.
+Manages blog posts, categories, and related operations, interacting with the backend API.
 
 **Provided Values:**
-- `blogs` (array): Collection of blog posts
-- `categories` (array): Available categories
-- `loading` (boolean): Loading state
-- `addBlog(blog)`: Add new blog
-- `updateBlog(id, blog)`: Update existing blog
-- `deleteBlog(id)`: Delete a blog
-- `getBlogBySlug(slug)`: Retrieve blog by URL slug
+- `blogs` (array): Collection of blog posts fetched from the database.
+- `categories` (array): Available categories.
+- `loading` (boolean): Loading state for blog data.
+- `addBlog(blog)`: Adds a new blog post to the database.
+- `updateBlog(id, blog)`: Updates an existing blog post in the database.
+- `deleteBlog(id)`: Deletes a blog post from the database.
+- `getBlogBySlug(slug)`: Retrieves a blog by URL slug from the fetched data.
 
 ### AuthContext
 
-Handles user authentication and profile information.
+Handles user authentication and profile information, interacting with the backend API.
 
 **Provided Values:**
-- `currentUser` (object): Current authenticated user
-- `isAuthenticated` (boolean): Authentication status
-- `login(credentials)`: Sign in user
-- `register(userData)`: Create new user
-- `logout()`: Sign out current user
-- `updateProfile(data)`: Update user profile
+- `isLoggedIn` (boolean): Authentication status of the user.
+- `currentUser` (object): Current authenticated user's data.
+- `loading` (boolean): Loading state for authentication status.
+- `login(token, userData)`: Signs in a user, stores token, and updates state.
+- `register(userData)`: Creates a new user account via API.
+- `logout()`: Signs out the current user, clears token, and updates state.
+- `updateProfile(data)`: Updates user profile via API.
 
 ## Routing
 
@@ -434,72 +453,37 @@ The TipTap-based rich text editor provides:
 
 ## Data Storage
 
-### Local Storage Management
+Midnight Blog now uses a MongoDB database for persistent data storage, accessed via a Node.js/Express.js backend API. This replaces the previous `localStorage` based simulation.
 
-The application uses localStorage for data persistence with the following features:
+### Backend Data Storage
 
-1. **Content Storage**:
-   - Efficient storage of blog data
-   - Compressed image data
-   - Optimized content storage
-   - Metadata management
+Data is stored in MongoDB collections:
 
-2. **Storage Limits**:
-   - Monitors total localStorage usage
-   - Warning at 70% storage capacity
-   - Automatic content truncation if needed
-   - Fallback mechanisms for storage overflow
+-   **`blog_data`**: Stores all blog posts.
+-   **`auth_data`**: Stores user authentication details.
 
-3. **Image Storage**:
-   - Base64 encoding for file uploads
-   - Direct URL storage for image links
-   - Size validation before storage
-   - Automatic compression for large images
-   - Fallback to placeholder images when needed
+### Client-Side Data Handling
 
-### Storage Structure
-
-```javascript
-{
-  blogs: [
-    {
-      id: string,
-      title: string,
-      content: string, // HTML content
-      excerpt: string,
-      image: string, // base64 or URL
-      date: string,
-      category: string,
-      slug: string,
-      
-    }
-  ]
-}
-```
+The frontend interacts with the backend API to perform CRUD operations. `localStorage` is now primarily used only for storing the user's authentication token.
 
 ### Error Handling
 
-1. **Storage Errors**:
-   - Clear error messages for storage failures
-   - Graceful fallbacks for quota exceeded
-   - Automatic cleanup of invalid data
-   - User-friendly warnings
-
-2. **Validation Errors**:
-   - Image size and format validation
-   - Content length validation
-   - URL validation for image links
-   - Clear error messages for invalid inputs
+1.  **API Errors**:
+    -   Errors from backend API calls are caught and handled, providing user-friendly messages.
+    -   Network errors are specifically identified.
+2.  **Validation Errors**:
+    -   Backend validation ensures data integrity before saving to the database.
+    -   Frontend validation provides immediate feedback to the user.
 
 ## Performance Considerations
 
 ### Optimization Techniques
 
-1. **Code Splitting**: Routes are code-split for faster initial load
-2. **Image Optimization**: Images are lazy-loaded and sized appropriately
-3. **Memoization**: React.memo and useMemo for expensive operations
-4. **Virtual Lists**: For long content lists (comments, blog listing)
-5. **Debounced Inputs**: Form inputs use debounce for performance
+1.  **Code Splitting**: Routes are code-split for faster initial load.
+2.  **Image Optimization**: Images are lazy-loaded and sized appropriately.
+3.  **Memoization**: `React.memo` and `useMemo` for expensive operations.
+4.  **Debounced Inputs**: Form inputs use debounce for performance.
+5.  **Server-Side Processing**: Heavy data operations are offloaded to the backend.
 
 ### Lazy Loading Components
 
@@ -612,27 +596,30 @@ refactor: restructure BlogCard component
 
 ### Common Issues
 
+#### "Network Error" or Server Connection Issues
+- Ensure your backend server is running (`npx nodemon index.js` in the `server` directory).
+- Verify your `MONGO_URI` in `server/.env` is correct and your MongoDB instance is accessible.
+- Check your browser's console for more specific network errors.
+
 #### "Cannot find module" errors
-- Ensure all dependencies are installed
-- Check import paths for typos
-- Restart the development server
+- Ensure all dependencies are installed in both `client` and `server` directories (`npm install`).
+- Check import paths for typos.
+- Restart the development server (both frontend and backend).
+
+#### "Each child in a list should have a unique \"key\" prop."
+- This is a React warning. Ensure that when mapping over arrays to render lists of components, each component has a unique `key` prop (e.g., `key={item.id}` or `key={item._id}` if from MongoDB).
 
 #### Styling issues
-- Clear browser cache
-- Verify TailwindCSS classes are correct
-- Check for conflicting styles
-
-#### LocalStorage errors
-- Clear browser storage
-- Check browser console for quota errors
-- Ensure JSON is valid before storing
+- Clear browser cache.
+- Verify TailwindCSS classes are correct.
+- Check for conflicting styles.
 
 ### Debugging Tools
 
-1. React DevTools for component inspection
-2. Application tab in DevTools for localStorage inspection
-3. Redux DevTools for state management (if added)
-4. Network tab for API requests (when implemented)
+1.  **Browser Developer Tools**: For network requests, console logs, and React component inspection.
+2.  **Backend Console**: The terminal where your Node.js server is running will show server-side logs and errors.
+3.  **MongoDB Client**: Use tools like MongoDB Compass or `mongosh` to directly inspect your database collections and data.
+
 
 ## FAQ
 
@@ -652,14 +639,14 @@ A: See the Contributing section for guidelines on how to contribute.
 
 ### Technical Questions
 
-**Q: How is authentication handled without a backend?**
-A: Authentication is simulated using localStorage. In a production environment, you would integrate with authentication services.
+**Q: How is authentication handled?**
+A: Authentication is handled via a Node.js/Express.js backend using JSON Web Tokens (JWTs). User credentials are sent to the backend, which returns a JWT upon successful login. This token is then stored client-side and sent with subsequent authenticated requests.
 
 **Q: Can I use TypeScript with this project?**
 A: Yes, the project can be migrated to TypeScript. A migration guide is planned for future documentation.
 
 **Q: How do I add new pages to the application?**
-A: Create a new component in the `pages` directory and add a corresponding route in `BrowserRouter.jsx`.
+A: Create a new component in the `pages` directory and add a corresponding route in `HashRouterApp.jsx`.
 
 ## Writing and Publishing
 
