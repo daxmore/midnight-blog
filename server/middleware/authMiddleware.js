@@ -14,6 +14,7 @@ export const protect = async (req, res, next) => {
 
             // Get user from the token
             req.user = await User.findById(decoded.id).select('-password');
+            console.log("req.user in protect middleware:", req.user);
 
             next();
         } catch (error) {
@@ -24,5 +25,13 @@ export const protect = async (req, res, next) => {
 
     if (!token) {
         res.status(401).json({ message: 'Not authorized, no token' });
+    }
+};
+
+export const admin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(401).json({ message: 'Not authorized as an admin' });
     }
 };

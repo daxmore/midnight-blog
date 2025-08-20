@@ -52,7 +52,7 @@ const SigninForm = () => {
                 if (response.ok) {
                     console.log('Signin successful:', data);
                     localStorage.setItem('token', data.token);
-                    login(data.token, { username: data.username }); // Use login function from context
+                    login(data.token, { username: data.username, role: data.role }); // Use login function from context
                 } else {
                     // setSigninError(data.message || 'Signin failed. Please try again.');
                     console.error('Signin failed:', data);

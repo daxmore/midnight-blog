@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 export const AuthContext = createContext();
 
@@ -14,39 +15,45 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
-    const [loading, setLoading] = useState(true); // To handle initial token check
+    const [loading, setLoading] = useState(true);
+    const [token, setToken] = useState(localStorage.getItem('token')); // New state for token
     const navigate = useNavigate();
 
-    console.log('AuthContext: Initializing. isLoggedIn:', isLoggedIn, 'loading:', loading); // ADDED THIS
-
-    // Check for token in localStorage on initial load
-    useEffect(() => {
-        const token = localStorage.getItem('token');
+    useLayoutEffect(() => {
         if (token) {
-            // In a real app, you'd verify this token with your backend
-            // For now, we'll assume a token means logged in
-            setIsLoggedIn(true);
-            setCurrentUser({ username: 'Logged In User' }); // Replace with actual user data from token if possible
-            console.log('AuthContext: Token found. Setting isLoggedIn to true.'); // ADDED THIS
+            try {
+                const decoded = jwtDecode(token);
+                // You might want to check token expiration here
+                setIsLoggedIn(true);
+                setCurrentUser({
+                    id: decoded.id,
+                    role: decoded.role,
+                    // You can add other user info here if it's in the token
+                });
+                console.log("Decoded token role:", decoded.role);
+            } catch (error) {
+                console.error("Invalid token:", error);
+                localStorage.removeItem('token');
+                setToken(null); // Clear token state on error
+            }
         }
-        setLoading(false);
-        console.log('AuthContext: Initial load complete. isLoggedIn:', isLoggedIn, 'loading:', loading); // ADDED THIS
-    }, []);
+        setTimeout(() => {
+            setLoading(false);
+        }, 100); // Add a small delay
+    }, [token]); // Add token to dependency array
 
-    const login = useCallback((token, user) => {
-        localStorage.setItem('token', token);
+    const login = useCallback((newToken, user) => {
+        localStorage.setItem('token', newToken);
+        setToken(newToken); // Set token state
         setIsLoggedIn(true);
-        setCurrentUser(user);
-        console.log('AuthContext: User logged in. isLoggedIn:', true); // ADDED THIS
-        navigate('/'); // Redirect to home or dashboard after login
-    }, [navigate]);
+    }, []);
 
     const logout = useCallback(() => {
         localStorage.removeItem('token');
+        setToken(null); // Clear token state
         setIsLoggedIn(false);
         setCurrentUser(null);
-        console.log('AuthContext: User logged out. isLoggedIn:', false); // ADDED THIS
-        navigate('/signin'); // Redirect to login page after logout
+        navigate('/signin');
     }, [navigate]);
 
     const contextValue = {

@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 dotenv.config();
 
@@ -23,6 +24,9 @@ app.use('/api/auth', authRoutes);
 
 // Blog routes
 app.use('/api/blogs', blogRoutes);
+
+// Admin routes
+app.use('/api/admin', adminRoutes);
 
 const PORT = process.env.PORT || 2500;
 

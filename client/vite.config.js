@@ -9,7 +9,13 @@ export default defineConfig({
     tailwindcss()
   ],
   server: {
-    host: true
+    host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:2500',
+        changeOrigin: true,
+      },
+    }
   },
   build: {
     chunkSizeWarningLimit: 600, // Increase the warning limit (optional)

@@ -1,0 +1,252 @@
+This guide will walk you through creating an admin side for your Midnight Blog project.
+
+Here is a step-by-step guide to creating an admin side for your project:
+
+## Backend Implementation
+
+### 1. Update the User Model
+
+First, you need to add a `role` to your user model to differentiate between regular users and admins.
+
+**File:** `server/models/user.js`
+
+```javascript
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' }, // Add this line
+});
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
+```
+
+### 2. Update the Auth Controller
+
+Now, update your authentication controller to include the user's role in the JWT token.
+
+**File:** `server/controllers/authController.js`
+
+Update the `generateToken` function to include the role:
+
+```javascript
+const generateToken = (id, role) => { // Add role here
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, { // Add role to payload
+    expiresIn: '30d',
+  });
+};
+```
+
+Then, in your `authUser` (login) function, pass the role to `generateToken`:
+
+```javascript
+// Inside authUser function, after finding the user
+if (user && (await user.matchPassword(password))) {
+  res.json({
+    _id: user._id,
+    username: user.username,
+    role: user.role, // Optionally send role in response
+    token: generateToken(user._id, user.role), // Pass role here
+  });
+}
+```
+
+In your `registerUser` function, you can decide how to assign the admin role. For simplicity, you could make the first registered user an admin:
+
+```javascript
+// Inside registerUser function
+const userExists = await User.findOne({ username });
+
+if (userExists) {
+  res.status(400).json({ message: 'User already exists' });
+  return;
+}
+
+const isFirstUser = (await User.countDocuments({})) === 0;
+const role = isFirstUser ? 'admin' : 'user';
+
+const user = await User.create({
+  username,
+  password,
+  role, // Set the role here
+});
+
+if (user) {
+  res.status(201).json({
+    _id: user._id,
+    username: user.username,
+    role: user.role,
+    token: generateToken(user._id, user.role),
+  });
+} else {
+  res.status(400).json({ message: 'Invalid user data' });
+}
+```
+
+### 3. Create Admin Middleware
+
+Create a middleware to protect your admin routes.
+
+**File:** `server/middleware/authMiddleware.js`
+
+Add the following `admin` middleware to the file:
+
+```javascript
+const admin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(401).json({ message: 'Not authorized as an admin' });
+  }
+};
+
+module.exports = { protect, admin }; // Export the new middleware
+```
+
+### 4. Create Admin Routes
+
+Now, create routes that only admins can access.
+
+**Create a new file:** `server/routes/adminRoutes.js`
+
+```javascript
+const express = require('express');
+const router = express.Router();
+const { protect, admin } = require('../middleware/authMiddleware');
+
+// Example admin route
+router.get('/users', protect, admin, (req, res) => {
+  // This is a protected admin route
+  // You can fetch all users here, for example
+  res.json({ message: 'Welcome to the admin area!' });
+});
+
+module.exports = router;
+```
+
+You will also need to use these routes in your main `index.js` file.
+
+**File:** `server/index.js`
+
+```javascript
+// ... other imports
+const adminRoutes = require('./routes/adminRoutes');
+
+// ... after app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+```
+
+## Frontend Implementation
+
+### 1. Update Auth Context
+
+Your frontend needs to be aware of the user's role.
+
+**File:** `client/src/context/AuthContext.jsx`
+
+You'll need to decode the JWT token on the client-side to get the user's role after login and store it in your context state. You can use a library like `jwt-decode`.
+
+First, install it: `npm install jwt-decode` in the `client` directory.
+
+Then, update your `AuthContext` to store user info, including the role. The specifics will depend on your implementation, but it will look something like this:
+
+```javascript
+// Inside your login function in AuthContext
+const data = await response.json();
+localStorage.setItem('userInfo', JSON.stringify(data));
+// Assuming the token is in data.token
+const decoded = jwt_decode(data.token);
+// Now you have the role in decoded.role
+// Update your state with user info and role
+setUserInfo({ ...data, role: decoded.role });
+```
+
+### 2. Create a Protected Admin Route Component
+
+This component will prevent non-admin users from accessing admin pages.
+
+**Create a new file:** `client/src/components/auth/AdminRoute.jsx`
+
+```javascript
+import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext'; // Adjust path if needed
+
+const AdminRoute = () => {
+  const { userInfo } = useAuth(); // Get user info from your context
+
+  return userInfo && userInfo.role === 'admin' ? <Outlet /> : <Navigate to="/" replace />;
+};
+
+export default AdminRoute;
+```
+
+### 3. Create Admin Pages
+
+Create the pages for your admin dashboard.
+
+**Create a new directory:** `client/src/pages/admin`
+**Create a new file:** `client/src/pages/admin/Dashboard.jsx`
+
+```javascript
+import React from 'react';
+
+const Dashboard = () => {
+  return (
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>Welcome, admin!</p>
+    </div>
+  );
+};
+
+export default Dashboard;
+```
+
+### 4. Update the Frontend Router
+
+Finally, add the new admin routes to your main router.
+
+**File:** `client/src/App.jsx`
+
+```javascript
+// ... other imports
+import AdminRoute from './components/auth/AdminRoute';
+import Dashboard from './pages/admin/Dashboard';
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* ... your other routes */}
+          <Route path="/admin" element={<AdminRoute />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            {/* Add other admin routes here */}
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
+```
+
+This guide provides a complete overview of how to add an admin side to your project. You will need to adapt the code to your specific project structure and needs.

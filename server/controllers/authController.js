@@ -3,8 +3,8 @@ import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
 
 // Generate JWT
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+const generateToken = (id, role) => {
+    return jwt.sign({ id, role }, process.env.JWT_SECRET, {
         expiresIn: '1h',
     });
 };
@@ -38,7 +38,7 @@ export const signupUser = async (req, res) => {
                 _id: user._id,
                 username: user.username,
                 email: user.email,
-                token: generateToken(user._id),
+                token: generateToken(user._id, user.role),
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
@@ -67,7 +67,7 @@ export const signinUser = async (req, res) => {
                 _id: user._id,
                 username: user.username,
                 email: user.email,
-                token: generateToken(user._id),
+                token: generateToken(user._id, user.role),
             });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
