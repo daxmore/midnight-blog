@@ -11,6 +11,9 @@ const UserList = () => {
   const [filter, setFilter] = useState('all');
   const [editingUser, setEditingUser] = useState(null);
   const [addingUser, setAddingUser] = useState(false); // New state for adding user
+  const [errorMessage, setErrorMessage] = useState(''); // State for error messages
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -30,7 +33,9 @@ const UserList = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setUsers(response.data);
+        setUsers(response.data.users);
+        setPage(response.data.page);
+        setPages(response.data.pages);
       } catch (error) {
         console.error('Error fetching users:', error);
       } finally {
@@ -79,6 +84,7 @@ const UserList = () => {
       });
     } catch (error) {
       console.error('Error updating user:', error);
+      setErrorMessage(error.response?.data?.message || 'An error occurred while updating the user.');
     }
   };
 
@@ -113,7 +119,33 @@ const UserList = () => {
       });
     } catch (error) {
       console.error('Error adding user:', error);
+      setErrorMessage(error.response?.data?.message || 'An error occurred while adding the user.');
     }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`/api/admin/users/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUsers(users.filter((user) => user._id !== userId));
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        setErrorMessage(error.response?.data?.message || 'An error occurred while deleting the user.');
+      }
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const handleCloseErrorPopup = () => {
+    setErrorMessage('');
   };
 
   // Filter and search logic
@@ -290,10 +322,29 @@ const UserList = () => {
             <div className="mt-6 flex justify-between items-center text-sm text-gray-400">
               <div>Showing {filteredUsers.length} of {users.length} users</div>
               <div className="flex space-x-1">
-                <button className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700">Previous</button>
-                <button className="px-3 py-1 rounded bg-blue-600 text-white">1</button>
-                <button className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700">2</button>
-                <button className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700">Next</button>
+                <button
+                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700"
+                  disabled={page <= 1}
+                  onClick={() => handlePageChange(page - 1)}
+                >
+                  Previous
+                </button>
+                {[...Array(pages).keys()].map((x) => (
+                  <button
+                    key={x + 1}
+                    className={`px-3 py-1 rounded ${page === x + 1 ? 'bg-blue-600 text-white' : 'bg-gray-800 hover:bg-gray-700'}`}
+                    onClick={() => handlePageChange(x + 1)}
+                  >
+                    {x + 1}
+                  </button>
+                ))}
+                <button
+                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700"
+                  disabled={page >= pages}
+                  onClick={() => handlePageChange(page + 1)}
+                >
+                  Next
+                </button>
               </div>
             </div>
           </>
@@ -357,6 +408,21 @@ const UserList = () => {
           </div>
         )}
       </div>
+
+      {errorMessage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-xl text-white max-w-sm w-full mx-4">
+            <h3 className="text-lg font-bold mb-4 text-red-400">Error</h3>
+            <p className="mb-6">{errorMessage}</p>
+            <button
+              onClick={handleCloseErrorPopup}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div >
   );
 };

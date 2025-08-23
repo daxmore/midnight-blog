@@ -165,7 +165,7 @@ const Dashboard = () => {
       >
         <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {['Create New Post', 'Manage Users', 'View Analytics', 'Settings'].map((action, index) => (
+          {['Create New Post', 'Manage Users', 'Settings'].map((action, index) => (
             <button
               key={index}
               className="bg-gray-700 hover:bg-gray-600 transition-colors p-4 rounded-lg text-center"

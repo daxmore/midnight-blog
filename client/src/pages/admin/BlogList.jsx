@@ -5,26 +5,35 @@ import axios from 'axios';
 import { useBlog } from '../../context/BlogContext';
 
 const BlogList = () => {
-  const { blogs, loading } = useBlog();
+  const { blogs, loading, removeBlog, page, pages, fetchBlogs, totalBlogs } = useBlog(); // Destructure page, pages, fetchBlogs, totalBlogs
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleCloseErrorPopup = () => {
+    setErrorMessage('');
+  };
 
   const handleDeleteBlog = async (blogId) => {
     if (window.confirm('Are you sure you want to delete this blog post?')) {
       try {
-        await axios.delete(`/api/blogs/${blogId}`);
-        // The blog context should refresh the blogs after deletion
+        await removeBlog(blogId);
       } catch (error) {
         console.error('Error deleting blog:', error);
+        setErrorMessage(error.message || 'An error occurred while deleting the blog post.');
       }
     }
   };
 
+  const handlePageChange = (newPage) => {
+    fetchBlogs(newPage); // Call fetchBlogs with the new page number
+  };
+
   // Filter and search logic
   const filteredBlogs = blogs.filter(blog => {
-    const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          blog.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      blog.category.toLowerCase().includes(searchTerm.toLowerCase());
+
     if (filter === 'all') return matchesSearch;
     return matchesSearch && blog.category === filter;
   });
@@ -37,7 +46,7 @@ const BlogList = () => {
       <div className="p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-white mb-4 md:mb-0">Blog Management</h1>
-          
+
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative">
               <input
@@ -49,10 +58,10 @@ const BlogList = () => {
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
             </div>
-            
+
             <div className="relative">
-              <select 
-                value={filter} 
+              <select
+                value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 className="pl-4 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none w-full sm:w-48"
               >
@@ -62,14 +71,14 @@ const BlogList = () => {
                 ))}
               </select>
             </div>
-            
+
             <Link to="/create-blog" className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
               <PlusCircle className="h-5 w-5" />
               <span>New Post</span>
             </Link>
           </div>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -82,9 +91,9 @@ const BlogList = () => {
                   <div key={blog._id} className="bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
                     <div className="flex flex-col md:flex-row">
                       <div className="md:w-64 h-48 md:h-auto overflow-hidden">
-                        <img 
-                          src={blog.featuredImage} 
-                          alt={blog.title} 
+                        <img
+                          src={blog.featuredImage}
+                          alt={blog.title}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -107,10 +116,10 @@ const BlogList = () => {
                             <Link to={`/blogs/${blog._id}`} className="p-2 text-gray-400 hover:text-blue-400 transition-colors">
                               <Eye className="h-5 w-5" />
                             </Link>
-                            <Link to={`/edit-blog/${blog._id}`} className="p-2 text-gray-400 hover:text-yellow-400 transition-colors">
+                            <Link to={`/admin/edit-blog/${blog._id}`} className="p-2 text-gray-400 hover:text-yellow-400 transition-colors">
                               <Edit className="h-5 w-5" />
                             </Link>
-                            <button 
+                            <button
                               onClick={() => handleDeleteBlog(blog._id)}
                               className="p-2 text-gray-400 hover:text-red-400 transition-colors"
                             >
@@ -118,11 +127,11 @@ const BlogList = () => {
                             </button>
                           </div>
                         </div>
-                        
+
                         <p className="text-gray-400 text-sm mb-4 line-clamp-2">
                           {blog.excerpt || blog.content.slice(0, 150) + '...'}
                         </p>
-                        
+
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
@@ -146,19 +155,52 @@ const BlogList = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="mt-6 flex justify-between items-center text-sm text-gray-400">
-              <div>Showing {filteredBlogs.length} of {blogs.length} posts</div>
+              <div>Showing {filteredBlogs.length} of {totalBlogs} posts</div>
               <div className="flex space-x-1">
-                <button className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700">Previous</button>
-                <button className="px-3 py-1 rounded bg-blue-600 text-white">1</button>
-                <button className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700">2</button>
-                <button className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700">Next</button>
+                <button
+                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700"
+                  disabled={page <= 1}
+                  onClick={() => handlePageChange(page - 1)}
+                >
+                  Previous
+                </button>
+                {[...Array(pages).keys()].map((x) => (
+                  <button
+                    key={x + 1}
+                    className={`px-3 py-1 rounded ${page === x + 1 ? 'bg-blue-600 text-white' : 'bg-gray-800 hover:bg-gray-700'}`}
+                    onClick={() => handlePageChange(x + 1)}
+                  >
+                    {x + 1}
+                  </button>
+                ))}
+                <button
+                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700"
+                  disabled={page >= pages}
+                  onClick={() => handlePageChange(page + 1)}
+                >
+                  Next
+                </button>
               </div>
             </div>
           </>
         )}
       </div>
+      {errorMessage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-xl text-white max-w-sm w-full mx-4">
+            <h3 className="text-lg font-bold mb-4 text-red-400">Error</h3>
+            <p className="mb-6">{errorMessage}</p>
+            <button
+              onClick={handleCloseErrorPopup}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

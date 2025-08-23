@@ -65,7 +65,7 @@ export const updateUser = asyncHandler(async (req, res) => {
     user.email = req.body.email || user.email;
     user.role = req.body.role || user.role;
 
-    if (req.body.password) {
+    if (req.body.password && req.body.password !== '') {
       user.password = req.body.password; // Storing plain text password
     }
 
@@ -130,4 +130,38 @@ export const deleteBlog = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Blog not found');
   }
+});
+
+// @desc    Get dashboard statistics
+// @route   GET /api/admin/dashboard-stats
+// @access  Private/Admin
+export const getDashboardStats = asyncHandler(async (req, res) => {
+  const totalPosts = await Blog.countDocuments({});
+  const totalUsers = await User.countDocuments({});
+
+  // Aggregate trending categories
+  const trendingCategories = await Blog.aggregate([
+    {
+      $group: {
+        _id: '$category',
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $sort: { count: -1 }
+    },
+    {
+      $limit: 5 // Top 5 trending categories
+    }
+  ]);
+
+  // Placeholder for recent views (no tracking implemented yet)
+  const recentViews = Math.floor(Math.random() * 10000) + 1000; // Random number for simulation
+
+  res.json({
+    totalPosts,
+    totalUsers,
+    recentViews,
+    trendingCategories: trendingCategories.map(cat => ({ name: cat._id, count: cat.count }))
+  });
 });

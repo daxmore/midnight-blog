@@ -89,7 +89,7 @@ const BlogCard = ({ title = 'Untitled', excerpt, imageUrl, date, category, index
                         {new Date(date).toLocaleDateString()}
                     </time>
                     <Link
-                        to={`/blogs/${slug}`}
+                        to={`/blogs/${id}`}
                         className="mt-4 inline-block text-violet-400 px-4 py-2 rounded hover:text-violet-600 transition-colors"
                         aria-label={`Read full article: ${title}`}
                         itemProp="url"

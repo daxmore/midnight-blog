@@ -24,6 +24,7 @@ const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const UserList = lazy(() => import('./pages/admin/UserList'));
 const BlogList = lazy(() => import('./pages/admin/BlogList'));
+const CreateBlogPost = lazy(() => import('./pages/CreateBlogPost')); // Added CreateBlogPost
 
 
 // Loading component for Suspense fallback
@@ -54,7 +55,7 @@ const HashRouterApp = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (isLoggedIn && currentUser && currentUser.role === 'admin' && !location.pathname.startsWith('/admin')) {
+        if (isLoggedIn && currentUser && currentUser.role === 'admin' && !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/blogs/')) {
             navigate('/admin/dashboard');
         } else if (isLoggedIn && !currentUser && location.pathname !== '/') {
             // If logged in but no currentUser (e.g., token expired or invalid), navigate to home
@@ -71,6 +72,7 @@ const HashRouterApp = () => {
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="users" element={<UserList />} />
                         <Route path="blogs" element={<BlogList />} />
+                        <Route path="edit-blog/:id" element={<CreateBlogPost />} /> {/* Added edit blog route */}
                     </Route>
                     <Route
                         path="*"
@@ -89,7 +91,7 @@ const HashRouterApp = () => {
                     <Route path="/start-writing" element={<StartWriting />} />
                     <Route path="/signin" element={<SigninForm />} />
                     <Route path="/signup" element={<SignupForm />} />
-                    <Route path="/blogs/:slug" element={<BlogDetailsPage />} />
+                    <Route path="/blogs/:id" element={<BlogDetailsPage />} /> {/* Changed :slug to :id */}
 
                     <Route
                         path="*"

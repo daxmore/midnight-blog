@@ -7,6 +7,7 @@ import { useContext } from 'react';
 import { BlogContext } from '../context/BlogContext';
 import SuccessPopup from '../components/common/SuccessPopup';
 import { useBlog } from '../context/BlogContext';
+import { useParams } from 'react-router-dom'; // Import useParams
 
 // React Icons
 import {
@@ -36,7 +37,8 @@ const WARNING_THRESHOLD = 0.8; // Show warning at 80% of limit
 const STORAGE_WARNING_THRESHOLD = 0.7; // Show storage warning at 70% of total storage
 
 const CreateBlogPost = () => {
-    const { addBlog } = useBlog();
+    const { id } = useParams(); // Get ID from URL
+    const { addBlog, getBlogByIdFromContext, updateBlog, loading: blogsLoading } = useBlog(); // Added blogsLoading
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [category, setCategory] = useState('');
@@ -48,10 +50,10 @@ const CreateBlogPost = () => {
     const [isNearLimit, setIsNearLimit] = useState(false);
     const fileInputRef = useRef(null);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [isEditMode, setIsEditMode] = useState(false); // New state for edit mode
 
-    
-
-    // Tiptap Editor Configuration
+    // Tiptap Editor Configuration - MOVED HERE
     const editor = useEditor({
         extensions: [
             StarterKit,
@@ -97,6 +99,42 @@ const CreateBlogPost = () => {
             }
         }
     });
+
+    const handleCloseErrorPopup = () => {
+        setErrorMessage('');
+    };
+
+    useEffect(() => {
+        if (id && !blogsLoading) { // Only run if id exists and blogs are loaded
+            setIsEditMode(true);
+            const blogToEdit = getBlogByIdFromContext(id);
+            if (blogToEdit) {
+                setTitle(blogToEdit.title);
+                setContent(blogToEdit.content);
+                setCategory(blogToEdit.category);
+                setImageUrl(blogToEdit.featuredImage || '');
+                // Set editor content
+                if (editor) {
+                    editor.commands.setContent(blogToEdit.content);
+                }
+            } else {
+                // Handle case where blog is not found (e.g., redirect to 404 or home)
+                console.error('Blog not found for editing:', id);
+                // Optionally navigate away or show an error
+            }
+        } else if (!id) { // Only clear form if not in edit mode
+            setIsEditMode(false);
+            // Clear form if not in edit mode
+            setTitle('');
+            setContent('');
+            setCategory('');
+            setImage(null);
+            setImageUrl('');
+            if (editor) {
+                editor.commands.setContent('');
+            }
+        }
+    }, [id, editor, getBlogByIdFromContext, blogsLoading]);
 
     const validateImage = async (imageData) => {
         if (!imageData) return { isValid: true }; // No image is valid
@@ -263,7 +301,58 @@ const CreateBlogPost = () => {
             setShowSuccessPopup(true);
         } catch (error) {
             console.error('Error adding blog:', error);
-            alert(error.message);
+            setErrorMessage(error.response?.data?.message || 'An error occurred while adding the blog post.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleUpdateBlog = async () => {
+        if (!title || !content || !category) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        // Validate image before posting
+        const imageToValidate = imageUrl || image;
+        if (imageToValidate) {
+            const validation = await validateImage(imageToValidate);
+            if (!validation.isValid) {
+                setImageWarning({
+                    type: 'error',
+                    message: validation.message
+                });
+                return;
+            }
+        }
+
+        setIsSubmitting(true);
+        try {
+            let imageData = null;
+            
+            // Handle image data
+            if (imageUrl) {
+                // If it's a URL, use it directly
+                imageData = imageUrl;
+            } else if (image) {
+                // If it's a file, convert it to base64
+                imageData = await readFileAsDataURL(image);
+            }
+
+            const blogData = {
+                title,
+                content: editor.getHTML(),
+                category,
+                image: imageData,
+                excerpt: editor.getText().replace(/<[^>]*>/g, '').slice(0, 150) + '...',
+                author: 'Dax More' // Replace with actual author data
+            };
+
+            await updateBlog(id, blogData); // Use updateBlog from context
+            setShowSuccessPopup(true);
+        } catch (error) {
+            console.error('Error updating blog:', error);
+            setErrorMessage(error.response?.data?.message || 'An error occurred while updating the blog post.');
         } finally {
             setIsSubmitting(false);
         }
@@ -494,7 +583,7 @@ const CreateBlogPost = () => {
                 {/* Submit Button */}
                 <div>
                     <button
-                        onClick={handleAddBlog}
+                        onClick={isEditMode ? handleUpdateBlog : handleAddBlog} // Conditional onClick
                         disabled={isSubmitting || charCount > MAX_CONTENT_LENGTH}
                         className={`px-6 py-2 rounded-lg text-white font-medium
                             ${(isSubmitting || charCount > MAX_CONTENT_LENGTH)
@@ -502,7 +591,7 @@ const CreateBlogPost = () => {
                                 : 'bg-blue-600 hover:bg-blue-700'
                             }`}
                     >
-                        {isSubmitting ? 'Publishing...' : 'Publish Post'}
+                        {isSubmitting ? (isEditMode ? 'Updating...' : 'Publishing...') : (isEditMode ? 'Update Post' : 'Publish Post')}
                     </button>
                 </div>
             </div>
@@ -510,10 +599,25 @@ const CreateBlogPost = () => {
             {/* Success Popup */}
             <SuccessPopup
                 isVisible={showSuccessPopup}
-                message="Your blog post has been published successfully!"
+                message={`Your blog post has been ${isEditMode ? 'updated' : 'published'} successfully!`}
                 onClose={() => setShowSuccessPopup(false)}
                 autoCloseTime={4000}
             />
+
+            {errorMessage && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-xl text-white max-w-sm w-full mx-4">
+                        <h3 className="text-lg font-bold mb-4 text-red-400">Error</h3>
+                        <p className="mb-6">{errorMessage}</p>
+                        <button
+                            onClick={handleCloseErrorPopup}
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

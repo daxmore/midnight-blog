@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from "react-router-dom";
+import axios from 'axios'; // Import axios
 
 import BlogHeader from '../components/blog/BlogHeader';
 import BlogContent from '../components/blog/BlogContent';
@@ -11,7 +12,7 @@ import { useBlog } from '../context/BlogContext';
 import ErrorPage from './ErrorPage';
 
 // Internal DocumentHead component to avoid import issues
-const DocumentHead = ({ title, description, image, author, date, category, slug }) => {
+const DocumentHead = ({ title, description, image, author, date, category, id }) => {
     useEffect(() => {
         // Update page title
         if (title) {
@@ -36,7 +37,7 @@ const DocumentHead = ({ title, description, image, author, date, category, slug 
             canonicalLink.setAttribute('rel', 'canonical');
             document.head.appendChild(canonicalLink);
         }
-        canonicalLink.setAttribute('href', `${window.location.origin}/blogs/${slug}`);
+        canonicalLink.setAttribute('href', `${window.location.origin}/blogs/${id}`);
 
         // Add keywords for better SEO
         let metaKeywords = document.querySelector('meta[name="keywords"]');
@@ -124,24 +125,50 @@ const DocumentHead = ({ title, description, image, author, date, category, slug 
             },
             "mainEntityOfPage": {
                 "@type": "WebPage",
-                "@id": `${window.location.origin}/blogs/${slug}`
+                "@id": `${window.location.origin}/blogs/${id}`
             }
         };
 
         schemaScript.textContent = JSON.stringify(schemaData);
         document.head.appendChild(schemaScript);
 
-    }, [title, description, image, author, date, category, slug]);
+    }, [title, description, image, author, date, category, id]);
 
     return null; // This component doesn't render anything
 };
 
 const BlogDetailsPage = () => {
-    const { slug } = useParams();
+    const { id } = useParams();
     const navigate = useNavigate();
-    const { blogs, loading } = useBlog();
+    const [blog, setBlog] = useState(null); // State to store the fetched blog
+    const [loading, setLoading] = useState(true); // Local loading state
+    const [error, setError] = useState(null); // Error state
 
-    // Wait for blogs to load
+    useEffect(() => {
+        const fetchBlogDetails = async () => {
+            if (!id) {
+                setError('Blog ID is missing.');
+                setLoading(false);
+                return;
+            }
+            try {
+                setLoading(true);
+                const res = await axios.get(`/api/blogs/${id}`); // Fetch directly from backend
+                setBlog(res.data);
+                setError(null);
+            } catch (err) {
+                console.error('Error fetching blog details:', err);
+                setError('Blog not found or an error occurred.');
+                setBlog(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBlogDetails();
+    }, [id]); // Re-fetch when ID changes
+
+    // Show loading spinner
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -150,14 +177,13 @@ const BlogDetailsPage = () => {
         );
     }
 
-    const blog = blogs.find((b) => b.slug === slug);
-
-    if (!slug || !blog) {
-        console.error("Blog post not found or slug is missing.");
+    // Show error page if blog not found or error occurred
+    if (error || !blog) {
+        console.error("Blog post not found or ID is missing/invalid.");
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-4">
                 <h1 className="text-2xl font-bold mb-4">Blog Not Found</h1>
-                <p className="text-gray-400 mb-6">The blog post you're looking for doesn't exist.</p>
+                <p className="text-gray-400 mb-6">{error || "The blog post you're looking for doesn't exist."}</p>
                 <button
                     onClick={() => navigate("/")}
                     className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
@@ -170,12 +196,11 @@ const BlogDetailsPage = () => {
 
     // Ensure the blog post has all required fields
     const safeBlog = {
-        id: blog.id,
+        id: blog._id, // Use _id from fetched blog
         title: blog.title || 'Untitled Blog Post',
         content: blog.content || '<p>No content available</p>',
         image: blog.featuredImage || '/images/default-blog.jpg', // Use a local default image
-        date: blog.date || new Date().toLocaleDateString(),
-        slug: blog.slug || slug,
+        date: blog.publishedAt || new Date().toLocaleDateString(), // Use publishedAt
         author: blog.author || 'Anonymous',
         readTime: blog.readTime || '5 min read',
         excerpt: blog.excerpt || 'Blog post details',

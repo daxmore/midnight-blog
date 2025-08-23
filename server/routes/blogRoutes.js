@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBlog, getBlogs, getBlogBySlug } from '../controllers/blogController.js';
+import { createBlog, getBlogs, getBlogById, deleteBlog, updateBlog } from '../controllers/blogController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -12,8 +12,16 @@ router.post('/', protect, createBlog);
 // @desc    Get all blog posts
 router.get('/', getBlogs);
 
-// @route   GET /api/blogs/:slug
-// @desc    Get a single blog post by slug
-router.get('/:slug', getBlogBySlug);
+// @route   GET /api/blogs/:id
+// @desc    Get a single blog post by ID
+router.get('/:id', getBlogById);
+
+// @route   PUT /api/blogs/:id
+// @desc    Update a blog post
+router.put('/:id', protect, updateBlog);
+
+// @route   DELETE /api/blogs/:id
+// @desc    Delete a blog post
+router.delete('/:id', protect, deleteBlog);
 
 export default router;
