@@ -18,6 +18,7 @@ const ErrorPage = lazy(() => import('./pages/ErrorPage'));
 const SignupForm = lazy(() => import('./components/auth/SignupForm'));
 const SigninForm = lazy(() => import('./components/auth/SigninForm'));
 const BlogDetailsPage = lazy(() => import('./pages/BlogDetailsPage'));
+const BlogDetailsPagee = lazy(() => import('./pages/admin/BlogDetailsPage')); // Admin blog details page
 
 // Lazy load admin components
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -72,6 +73,7 @@ const HashRouterApp = () => {
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="users" element={<UserList />} />
                         <Route path="blogs" element={<BlogList />} />
+                        <Route path="blogs/:id" element={<BlogDetailsPagee />} /> {/* Admin blog details page */}
                         <Route path="edit-blog/:id" element={<CreateBlogPost />} /> {/* Added edit blog route */}
                     </Route>
                     <Route

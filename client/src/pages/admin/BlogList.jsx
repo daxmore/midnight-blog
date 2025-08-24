@@ -113,7 +113,7 @@ const BlogList = () => {
                             <h2 className="text-xl font-semibold text-white mb-2">{blog.title}</h2>
                           </div>
                           <div className="flex space-x-2">
-                            <Link to={`/blogs/${blog._id}`} className="p-2 text-gray-400 hover:text-blue-400 transition-colors">
+                            <Link to={`/admin/blogs/${blog._id}`} className="p-2 text-gray-400 hover:text-blue-400 transition-colors">
                               <Eye className="h-5 w-5" />
                             </Link>
                             <Link to={`/admin/edit-blog/${blog._id}`} className="p-2 text-gray-400 hover:text-yellow-400 transition-colors">
