@@ -6,7 +6,7 @@ import {
     MagnifyingGlassIcon,
     HomeIcon
 } from '@heroicons/react/24/solid';
-import SearchBar from '../components/common/SearchBar';
+import SearchBar from '../components/ui/SearchBar';
 
 const ErrorPage = ({
     errorCode = '404',

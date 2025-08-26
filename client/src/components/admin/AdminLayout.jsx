@@ -1,8 +1,8 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  Layout, ChevronLeft, Users, FileText, BarChart2, LogOut 
+import {
+  Layout, ChevronLeft, Users, FileText, BarChart2, LogOut
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -25,13 +25,12 @@ const AdminLayout = () => {
           <nav>
             <ul className="space-y-2">
               <li>
-                <NavLink 
-                  to="/admin/dashboard" 
-                  className={({ isActive }) => 
-                    `flex items-center p-3 rounded-lg transition-all ${
-                      isActive 
-                        ? 'bg-blue-900/30 text-blue-400' 
-                        : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'
+                <NavLink
+                  to="/admin/dashboard"
+                  className={({ isActive }) =>
+                    `flex items-center p-3 rounded-lg transition-all ${isActive
+                      ? 'bg-blue-900/30 text-blue-400'
+                      : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'
                     }`
                   }
                 >
@@ -40,13 +39,12 @@ const AdminLayout = () => {
                 </NavLink>
               </li>
               <li>
-                <NavLink 
-                  to="/admin/users" 
-                  className={({ isActive }) => 
-                    `flex items-center p-3 rounded-lg transition-all ${
-                      isActive 
-                        ? 'bg-blue-900/30 text-blue-400' 
-                        : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'
+                <NavLink
+                  to="/admin/users"
+                  className={({ isActive }) =>
+                    `flex items-center p-3 rounded-lg transition-all ${isActive
+                      ? 'bg-blue-900/30 text-blue-400'
+                      : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'
                     }`
                   }
                 >
@@ -55,13 +53,12 @@ const AdminLayout = () => {
                 </NavLink>
               </li>
               <li>
-                <NavLink 
-                  to="/admin/blogs" 
-                  className={({ isActive }) => 
-                    `flex items-center p-3 rounded-lg transition-all ${
-                      isActive 
-                        ? 'bg-blue-900/30 text-blue-400' 
-                        : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'
+                <NavLink
+                  to="/admin/blogs"
+                  className={({ isActive }) =>
+                    `flex items-center p-3 rounded-lg transition-all ${isActive
+                      ? 'bg-blue-900/30 text-blue-400'
+                      : 'hover:bg-gray-800 text-gray-400 hover:text-gray-200'
                     }`
                   }
                 >
@@ -72,8 +69,8 @@ const AdminLayout = () => {
             </ul>
 
             <div className="mt-10 pt-6 border-t border-gray-700">
-              <button 
-                onClick={handleLogout} 
+              <button
+                onClick={handleLogout}
                 className="flex items-center w-full p-3 rounded-lg text-red-400 hover:bg-red-900/20 transition-all"
               >
                 <LogOut className="mr-3 h-5 w-5" />
@@ -86,15 +83,6 @@ const AdminLayout = () => {
         {/* Main content */}
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center mb-6">
-              <NavLink 
-                to="/" 
-                className="text-sm flex items-center text-blue-400 hover:text-blue-300"
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Back to Site
-              </NavLink>
-            </div>
             <Outlet />
           </div>
         </main>

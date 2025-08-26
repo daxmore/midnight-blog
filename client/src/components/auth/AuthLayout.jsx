@@ -1,6 +1,6 @@
 import React from 'react';
-import Navbar from '../common/Navbar';
-import Footer from '../common/Footer';
+import Navbar from '../layout/Navbar';
+import Footer from '../layout/Footer';
 
 const AuthLayout = ({ children }) => {
     return (

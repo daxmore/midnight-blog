@@ -155,6 +155,9 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     }
   ]);
 
+  // Get recent blogs
+  const recentBlogs = await Blog.find({}).sort({ createdAt: -1 }).limit(5);
+
   // Placeholder for recent views (no tracking implemented yet)
   const recentViews = Math.floor(Math.random() * 10000) + 1000; // Random number for simulation
 
@@ -162,6 +165,7 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     totalPosts,
     totalUsers,
     recentViews,
-    trendingCategories: trendingCategories.map(cat => ({ name: cat._id, count: cat.count }))
+    trendingCategories: trendingCategories.map(cat => ({ name: cat._id, count: cat.count })),
+    recentBlogs
   });
 });

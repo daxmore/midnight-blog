@@ -2,40 +2,54 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart2, Users, FileText, TrendingUp, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useBlog } from '../../context/BlogContext';
+import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
-  const { blogs } = useBlog();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalPosts: 0,
     totalUsers: 0,
     recentViews: 0,
-    trendingCategories: []
+    trendingCategories: [],
+    recentBlogs: []
   });
-  
-  // Simulate fetching dashboard statistics
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    // In a real application, you would fetch this data from your API
     const fetchStats = async () => {
-      // Simulating API call
-      setTimeout(() => {
-        setStats({
-          totalPosts: blogs.length || 42,
-          totalUsers: 157,
-          recentViews: 1238,
-          trendingCategories: [
-            { name: 'Technology', count: 24 },
-            { name: 'Travel', count: 18 },
-            { name: 'Food', count: 15 },
-            { name: 'Lifestyle', count: 12 }
-          ]
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/signin');
+          return;
+        }
+
+        const response = await fetch('http://localhost:2500/api/admin/dashboard-stats', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
-      }, 500);
+
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        } else {
+          console.error('Failed to fetch dashboard stats');
+          if (response.status === 401) {
+            navigate('/signin');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-    
+
     fetchStats();
-  }, [blogs]);
+  }, [navigate]);
 
   const statCards = [
     { 
@@ -58,11 +72,35 @@ const Dashboard = () => {
     },
     { 
       title: 'Active Now',
-      value: Math.floor(Math.random() * 50),
+      value: Math.floor(Math.random() * 50), // Still simulated
       icon: Clock,
       color: 'bg-orange-500'
     }
   ];
+
+  const handleQuickActionClick = (action) => {
+    switch (action) {
+      case 'Create New Post':
+        navigate('/admin/blogs/create');
+        break;
+      case 'Manage Users':
+        navigate('/admin/users');
+        break;
+      case 'Settings':
+        alert('Settings page is not yet implemented.');
+        break;
+      default:
+        break;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -75,7 +113,7 @@ const Dashboard = () => {
         <h1 className="text-3xl font-bold mb-4 md:mb-0">Admin Dashboard</h1>
         <div className="bg-gray-800 px-4 py-2 rounded-lg">
           <p className="text-gray-300">
-            Welcome back, <span className="font-semibold text-white">{currentUser?.name || 'Admin'}</span>
+            Welcome back, <span className="font-semibold text-white">{currentUser?.username || 'Admin'}</span>
           </p>
         </div>
       </div>
@@ -116,14 +154,18 @@ const Dashboard = () => {
             Recent Activity
           </h2>
           <div className="space-y-4">
-            {[1, 2, 3, 4].map((_, index) => (
-              <div key={index} className="border-b border-gray-700 pb-3 last:border-0">
-                <p className="text-gray-300">
-                  New post published: <span className="font-medium text-white">Understanding React Hooks</span>
-                </p>
-                <p className="text-sm text-gray-500">2 hours ago</p>
-              </div>
-            ))}
+            {stats.recentBlogs && stats.recentBlogs.length > 0 ? (
+              stats.recentBlogs.map((blog) => (
+                <div key={blog._id} className="border-b border-gray-700 pb-3 last:border-0">
+                  <p className="text-gray-300">
+                    New post published: <span className="font-medium text-white">{blog.title}</span>
+                  </p>
+                  <p className="text-sm text-gray-500">{formatDistanceToNow(new Date(blog.createdAt), { addSuffix: true })}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-400">No recent activity.</p>
+            )}
           </div>
         </motion.div>
 
@@ -138,20 +180,24 @@ const Dashboard = () => {
             Trending Categories
           </h2>
           <div className="space-y-4">
-            {stats.trendingCategories.map((category, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <span className="text-gray-300">{category.name}</span>
-                <div className="flex items-center">
-                  <div className="w-36 bg-gray-700 rounded-full h-2.5 mr-2">
-                    <div 
-                      className="bg-blue-600 h-2.5 rounded-full" 
-                      style={{ width: `${(category.count / 30) * 100}%` }}
-                    ></div>
+            {stats.trendingCategories && stats.trendingCategories.length > 0 ? (
+              stats.trendingCategories.map((category, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-gray-300">{category.name}</span>
+                  <div className="flex items-center">
+                    <div className="w-36 bg-gray-700 rounded-full h-2.5 mr-2">
+                      <div 
+                        className="bg-blue-600 h-2.5 rounded-full" 
+                        style={{ width: `${(category.count / stats.totalPosts) * 100}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm text-gray-400">{category.count}</span>
                   </div>
-                  <span className="text-sm text-gray-400">{category.count}</span>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-400">No trending categories.</p>
+            )}
           </div>
         </motion.div>
       </div>
@@ -168,6 +214,7 @@ const Dashboard = () => {
           {['Create New Post', 'Manage Users', 'Settings'].map((action, index) => (
             <button
               key={index}
+              onClick={() => handleQuickActionClick(action)}
               className="bg-gray-700 hover:bg-gray-600 transition-colors p-4 rounded-lg text-center"
             >
               {action}

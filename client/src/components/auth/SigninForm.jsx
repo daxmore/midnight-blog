@@ -147,7 +147,7 @@ const SigninForm = () => {
             hover:from-purple-700 hover:to-pink-600 
             transition duration-300"
                     >
-                        <Link to="/signup" className="font-semibold">Sign In</Link>
+                        Sign In
                     </motion.button>
 
                     {/* Toggle to Signup */}

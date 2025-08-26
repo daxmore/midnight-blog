@@ -1,10 +1,10 @@
 import React, { lazy, Suspense, useEffect } from 'react';
 import { HashRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import Navbar from './components/common/Navbar';
-import AfterLoginNav from './components/common/AfterLoginNav';
+import Navbar from './components/layout/Navbar';
+import AfterLoginNav from './components/layout/AfterLoginNav';
 import { BlogProvider } from './context/BlogContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import Footer from './components/common/Footer';
+import Footer from './components/layout/Footer';
 import AdminRoute from './components/auth/AdminRoute';
 import './admin.css';
 
@@ -25,7 +25,7 @@ const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const UserList = lazy(() => import('./pages/admin/UserList'));
 const BlogList = lazy(() => import('./pages/admin/BlogList'));
-const CreateBlogPost = lazy(() => import('./pages/CreateBlogPost')); // Added CreateBlogPost
+const CreateBlogPost = lazy(() => import('./pages/admin/CreateBlogPost')); // Added CreateBlogPost
 
 
 // Loading component for Suspense fallback
@@ -56,6 +56,10 @@ const HashRouterApp = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
+
+    useEffect(() => {
         if (isLoggedIn && currentUser && currentUser.role === 'admin' && !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/blogs/')) {
             navigate('/admin/dashboard');
         } else if (isLoggedIn && !currentUser && location.pathname !== '/') {
@@ -74,6 +78,7 @@ const HashRouterApp = () => {
                         <Route path="users" element={<UserList />} />
                         <Route path="blogs" element={<BlogList />} />
                         <Route path="blogs/:id" element={<BlogDetailsPagee />} /> {/* Admin blog details page */}
+                        <Route path="blogs/create" element={<CreateBlogPost />} />
                         <Route path="edit-blog/:id" element={<CreateBlogPost />} /> {/* Added edit blog route */}
                     </Route>
                     <Route

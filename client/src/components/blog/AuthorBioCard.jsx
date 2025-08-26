@@ -6,7 +6,7 @@ const AuthorBioCard = ({ author }) => {
     // Create default author if not provided
     const defaultAuthor = {
         name: 'Anonymous Author',
-        bio: 'Information about this author is not available.',
+        bio: 'This author is still crafting their bio. In the meantime, enjoy their articles!',
         avatar: 'src/assets/images/daxmore.jpg',
         socialLinks: []
     };
