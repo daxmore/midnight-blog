@@ -1,19 +1,20 @@
 import { Blog } from '../models/blog.js';
+import { validationResult } from 'express-validator';
 
 // @desc    Create a new blog post
 // @route   POST /api/blogs
 // @access  Public (for now, will be protected later)
 export const createBlog = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     try {
         const { title, content, category, image, excerpt, author } = req.body;
 
         // Get user from req.user (set by protect middleware)
         const user = req.user._id;
-
-        // Basic validation
-        if (!title || !content || !category) {
-            return res.status(400).json({ msg: 'Please enter all required fields.' });
-        }
 
         // Create a slug from the title
         const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -87,6 +88,11 @@ export const getBlogById = async (req, res) => {
 // @route   PUT /api/blogs/:id
 // @access  Private
 export const updateBlog = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     const { title, content, category, image, excerpt, author } = req.body;
     console.log('Received update request for blog ID:', req.params.id);
     console.log('Request body:', req.body);
