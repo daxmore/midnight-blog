@@ -47,32 +47,6 @@ const BlogCard = ({ title = 'Untitled', excerpt, imageUrl, date, category, index
                 />
             )}
             <div className="p-6 relative">
-                {/* Three-dot menu button */}
-                <div className="absolute top-4 right-4">
-                    <button
-                        onClick={() => setMenuOpen(!menuOpen)}
-                        className="p-1 hover:bg-gray-700 rounded-full transition-colors"
-                        aria-label="Options menu"
-                    >
-                        <FaEllipsisV className="text-gray-400 hover:text-white" />
-                    </button>
-                    {menuOpen && (
-                        <div className="absolute right-0 mt-1 w-36 bg-gray-700 rounded-md shadow-lg z-10 overflow-hidden">
-                            <button
-                                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-600 flex items-center transition-colors"
-                                onClick={() => {
-                                    setMenuOpen(false);
-                                    removeBlog(id);
-                                }}
-                                aria-label="Delete blog post"
-                            >
-                                <FaTrash className="mr-2" />
-                                Delete
-                            </button>
-                        </div>
-                    )}
-                </div>
-
                 <span className="inline-block bg-purple-600 text-white px-3 py-1 rounded-full text-xs mb-2">
                     {category || 'Uncategorized'}
                 </span>

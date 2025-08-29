@@ -7,7 +7,7 @@ import BlogHeader from '../components/blog/BlogHeader';
 import BlogContent from '../components/blog/BlogContent';
 import AuthorBioCard from '../components/blog/AuthorBioCard';
 
-import NewsletterCTA from '../components/common/NewsletterCTA';
+import NewsletterCTA from "../components/home/NewsletterCTA";
 import { useBlog } from '../context/BlogContext';
 import ErrorPage from './ErrorPage';
 

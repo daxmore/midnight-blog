@@ -5,11 +5,15 @@ import BlogHero from '../components/blog/BlogHero';
 import { useBlog } from '../context/BlogContext'; // Use the custom hook
 
 const Blogs = () => {
-    const { blogs } = useBlog(); // Get blogs from context
+    const { blogs, fetchBlogs, totalBlogs } = useBlog(); // Get blogs, fetchBlogs, and totalBlogs from context
     const [activeCategory, setActiveCategory] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const POSTS_PER_PAGE = 6;
+
+    useEffect(() => {
+        fetchBlogs(1, totalBlogs > 0 ? totalBlogs : 1000); // Fetch all blogs when the component mounts
+    }, [fetchBlogs, totalBlogs]);
 
     // Reset pagination when filters change
     useEffect(() => {
