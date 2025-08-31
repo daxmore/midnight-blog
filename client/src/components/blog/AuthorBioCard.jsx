@@ -8,7 +8,6 @@ const AuthorBioCard = ({ author }) => {
         name: 'Anonymous Author',
         bio: 'This author is still crafting their bio. In the meantime, enjoy their articles!',
         avatar: 'src/assets/images/daxmore.jpg',
-        socialLinks: []
     };
 
     // Use provided author or default if missing
@@ -34,7 +33,7 @@ const AuthorBioCard = ({ author }) => {
             )}
             <div>
                 <h3 className="text-2xl font-bold text-white">{authorData.name}</h3>
-                <p className="text-gray-400 mb-4">{authorData.bio}</p>
+                <p className="text-gray-400 mb-4">{defaultAuthor.bio}</p>
                 
             </div>
         </motion.div>
